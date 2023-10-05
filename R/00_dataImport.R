@@ -25,11 +25,17 @@ read_excel_data <- function(file_path) {
   # Assign column names to sample_details
   colnames(sample_details) <- c("Variable", "Value")
   
+  # Add "Type" column to sample_details with value "SampleDetails"
+  sample_details$Type <- "SampleDetails"
+  
   # Read cells B6:I238 from the worksheet "Input_Data"
   input_data <- readxl::read_excel(file_path, sheet = "Input_Data", range = "B6:I238", col_names = FALSE)
   
   # Assign custom column names to input_data
   colnames(input_data) <- c("Taxon", "Qualifier", "densOriginal", "densBaseplate", "densReplicate", "propOriginal", "propBaseplate", "propReplicate")
+  
+  # Add "Type" column
+  input_data$Type <- "TaxonAbundance"
   
   # Remove rows where all three variables are NA or zero
   input_data <- input_data %>%
@@ -38,6 +44,9 @@ read_excel_data <- function(file_path) {
   
   # Read the "QA_Summary" table from cells A2:B5
   qa_summary <- readxl::read_excel(file_path, sheet = "QA_Summary", range = "A1:B5", col_names = TRUE)
+  
+  # Add "Type" column
+  qa_summary$Type <- "QASummary"
   
   # Return a named list with filename, data frames, and QA_Summary table
   return(list(filename = file_name, sample_details = sample_details, input_data = input_data, qa_summary = qa_summary))
