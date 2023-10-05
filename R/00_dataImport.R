@@ -12,7 +12,8 @@ rm(ld_pkgs)
 path_to_files <- "path/to/files"
 
 # Get a list of all Excel files in the directory
-excel_files <- list.files(path_to_files, pattern = ".xls$|.xlsx$", full.names = TRUE)
+excel_files <-
+  list.files(path_to_files, pattern = ".xls$|.xlsx$", full.names = TRUE)
 
 # Function to read specific cells from a workbook and associate with filename
 read_excel_data <- function(file_path) {
@@ -34,13 +35,23 @@ read_excel_data <- function(file_path) {
     ifelse(sample_details$Value == "", NA, sample_details$Value)
   
   # Read additional values from Input_Data sheet (cells C1 and C2)
-  water_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C1", col_names = FALSE)
-  sub_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C2", col_names = FALSE)
+  water_sample_vol <-
+    readxl::read_excel(file_path,
+                       sheet = "Input_Data",
+                       range = "C1",
+                       col_names = FALSE)
+  sub_sample_vol <-
+    readxl::read_excel(file_path,
+                       sheet = "Input_Data",
+                       range = "C2",
+                       col_names = FALSE)
   
   # Add rows for WaterSampleVol_ml and SubSampleVol_ml to sample_details
-  sample_details <- rbind(sample_details, 
-                          c("WaterSampleVol_ml", as.character(water_sample_vol[[1]])),
-                          c("SubSampleVol_ml", as.character(sub_sample_vol[[1]])))
+  sample_details <- rbind(
+    sample_details,
+    c("WaterSampleVol_ml", as.character(water_sample_vol[[1]])),
+    c("SubSampleVol_ml", as.character(sub_sample_vol[[1]]))
+  )
   
   ###########################
   # Read cells B6:I238 from the worksheet "Input_Data"
@@ -83,16 +94,23 @@ read_excel_data <- function(file_path) {
       Replicate_prop
     ) %>%
     # Remove rows where all variables are NA or zero
-    filter(!(
-      is.na(Original_dens) & is.na(Baseplate_dens) & is.na(Replicate_dens) &
-        is.na(Original_prop) & is.na(Baseplate_prop) & is.na(Replicate_prop)
-    ) &
-      !(Original_dens == 0 & Baseplate_dens == 0 & Replicate_dens == 0 &
-          Original_prop == 0 & Baseplate_prop == 0 & Replicate_prop == 0)) %>% 
+    filter(
+      !(
+        is.na(Original_dens) &
+          is.na(Baseplate_dens) & is.na(Replicate_dens) &
+          is.na(Original_prop) &
+          is.na(Baseplate_prop) & is.na(Replicate_prop)
+      ) &
+        !(
+          Original_dens == 0 & Baseplate_dens == 0 & Replicate_dens == 0 &
+            Original_prop == 0 &
+            Baseplate_prop == 0 & Replicate_prop == 0
+        )
+    ) %>%
     ##convert to long
     pivot_longer(-Tax_Qual,
                  names_to = c("AnalysisType", ".value"),
-                 names_sep="_") %>% 
+                 names_sep = "_") %>%
     #remove NA or 0 values
     filter(!(is.na(dens)) & !(dens == 0))
   
