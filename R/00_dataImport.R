@@ -33,37 +33,6 @@ read_excel_data <- function(file_path) {
   sample_details$Value <-
     ifelse(sample_details$Value == "", NA, sample_details$Value)
   
-  # Add "Type" column to sample_details with value "SampleDetails"
-  sample_details$Type <- "SampleDetails"
-  
-  # Read cells C1 and C2 from the worksheet "Input_Data"
-  water_sample_vol <-
-    readxl::read_excel(file_path,
-                       sheet = "Input_Data",
-                       range = "C1:C1",
-                       col_names = FALSE)[[1, 1]]
-  sub_sample_vol <-
-    readxl::read_excel(file_path,
-                       sheet = "Input_Data",
-                       range = "C2:C2",
-                       col_names = FALSE)[[1, 1]]
-  
-  # Handle potentially blank cells and convert them to NA
-  water_sample_vol <-
-    ifelse(water_sample_vol == "", NA, water_sample_vol)
-  sub_sample_vol <- ifelse(sub_sample_vol == "", NA, sub_sample_vol)
-  
-  # Create a data frame with WaterSampleVol_ml and SubSampleVol_ml variables
-  sample_details_additional <- data.frame(
-    Variable = c("WaterSampleVol_ml", "SubSampleVol_ml"),
-    Value = as.character(c(water_sample_vol, sub_sample_vol)),
-    Type = "SampleDetails"
-  )
-  
-  # Combine the additional rows with the original sample_details data frame
-  sample_details <-
-    bind_rows(sample_details, sample_details_additional)
-  
   # Read cells B6:I238 from the worksheet "Input_Data"
   input_data <-
     readxl::read_excel(file_path,
@@ -76,12 +45,12 @@ read_excel_data <- function(file_path) {
     c(
       "Taxon",
       "Qualifier",
-      "densOriginal",
-      "densBaseplate",
-      "densReplicate",
-      "propOriginal",
-      "propBaseplate",
-      "propReplicate"
+      "Original_dens",
+      "Baseplate_dens",
+      "Replicate_dens",
+      "Original_prop",
+      "Baseplate_prop",
+      "Replicate_prop"
     )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
@@ -92,27 +61,30 @@ read_excel_data <- function(file_path) {
       input_data$Taxon
     )
   
-  # Add "Type" column
-  input_data$Type <- "TaxonAbundance"
-  
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
     select(
       Tax_Qual,
-      densOriginal,
-      densBaseplate,
-      densReplicate,
-      propOriginal,
-      propBaseplate,
-      propReplicate,
-      Type
+      Original_dens,
+      Baseplate_dens,
+      Replicate_dens,
+      Original_prop,
+      Baseplate_prop,
+      Replicate_prop
     ) %>%
-    # Remove rows where all three variables are NA or zero
+    # Remove rows where all variables are NA or zero
     filter(!(
-      is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)
+      is.na(Original_dens) & is.na(Baseplate_dens) & is.na(Replicate_dens) &
+        is.na(Original_prop) & is.na(Baseplate_prop) & is.na(Replicate_prop)
     ) &
-      !(densOriginal == 0 &
-          densBaseplate == 0 & densReplicate == 0))
+      !(Original_dens == 0 & Baseplate_dens == 0 & Replicate_dens == 0 &
+          Original_prop == 0 & Baseplate_prop == 0 & Replicate_prop == 0)) %>% 
+    ##convert to long
+    pivot_longer(-Tax_Qual,
+                 names_to = c("AnalysisType", ".value"),
+                 names_sep="_") %>% 
+    #remove NA or 0 values
+    filter(!(is.na(dens)) & !(dens == 0))
   
   # Read the "QA_Summary" table from cells A1:B5
   qa_summary <-
@@ -120,9 +92,6 @@ read_excel_data <- function(file_path) {
                        sheet = "QA_Summary",
                        range = "A1:B5",
                        col_names = TRUE)
-  
-  # Add "Type" column
-  qa_summary$Type <- "QASummary"
   
   # Return a named list with filename, data frames, and QA_Summary table
   return(
@@ -135,5 +104,5 @@ read_excel_data <- function(file_path) {
   )
 }
 
-# Use purrr::map() to apply the function to all files and read the data
-extracted_data <- map(excel_files, read_excel_data)
+# Use purrr::map() to apply the modified function to all files and read the data
+extracted_data <- purrr::map(excel_files, read_excel_data)
