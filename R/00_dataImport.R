@@ -1,2 +1,39 @@
 ## 00_dataImport.R
 # import data from >250 workbooks into long format
+
+# load packages #
+ld_pkgs <- c("tidyverse","purrr","readxl")
+vapply(ld_pkgs, library, logical(1L),
+       character.only = TRUE, logical.return = TRUE)
+rm(ld_pkgs)
+
+
+# Set the path to the directory containing your Excel files
+path_to_files <- "path/to/files"
+
+# Get a list of all Excel files in the directory
+excel_files <- list.files(path_to_files, pattern = ".xls$|.xlsx$", full.names = TRUE)
+
+# Function to read specific cells from a workbook and associate with filename
+read_excel_data <- function(file_path) {
+  # Get the filename with the extension
+  file_name <- basename(file_path)
+  
+  # Read cells A1:B13 from the worksheet "Sample_Details"
+  sample_details <- readxl::read_excel(file_path, sheet = "Sample_Details", range = "A1:B13", col_names = FALSE)
+  
+  # Assign column names to sample_details
+  colnames(sample_details) <- c("Variable", "Value")
+  
+  # Read cells B6:I238 from the worksheet "Input_Data"
+  input_data <- readxl::read_excel(file_path, sheet = "Input_Data", range = "B6:I238", col_names = FALSE)
+  
+  # Assign custom column names to input_data
+  colnames(input_data) <- c("Taxon", "Qualifier", "densOriginal", "densBaseplate", "densReplicate", "propOriginal", "propBaseplate", "propReplicate")
+  
+  # Return a named list with filename and data frames
+  return(list(filename = file_name, sample_details = sample_details, input_data = input_data))
+}
+
+# Use purrr::map() to apply the function to all files and read the data
+extracted_data <- map(excel_files, read_excel_data)
