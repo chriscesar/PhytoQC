@@ -34,15 +34,20 @@ read_excel_data <- function(file_path) {
   # Assign custom column names to input_data
   colnames(input_data) <- c("Taxon", "Qualifier", "densOriginal", "densBaseplate", "densReplicate", "propOriginal", "propBaseplate", "propReplicate")
   
+  # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
+  input_data$Tax_Qual <- ifelse(!is.na(input_data$Qualifier), paste(input_data$Taxon, input_data$Qualifier, sep = "_"), input_data$Taxon)
+  
   # Add "Type" column
   input_data$Type <- "TaxonAbundance"
   
-  # Remove rows where all three variables are NA or zero
+  # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
+    select(Tax_Qual, densOriginal, densBaseplate, densReplicate, propOriginal, propBaseplate, propReplicate, Type) %>%
+    # Remove rows where all three variables are NA or zero
     filter(!(is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)) &
              !(densOriginal == 0 & densBaseplate == 0 & densReplicate == 0))
   
-  # Read the "QA_Summary" table from cells A2:B5
+  # Read the "QA_Summary" table from cells A1:B5
   qa_summary <- readxl::read_excel(file_path, sheet = "QA_Summary", range = "A1:B5", col_names = TRUE)
   
   # Add "Type" column
