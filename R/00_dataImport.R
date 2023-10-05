@@ -33,6 +33,16 @@ read_excel_data <- function(file_path) {
   sample_details$Value <-
     ifelse(sample_details$Value == "", NA, sample_details$Value)
   
+  # Read additional values from Input_Data sheet (cells C1 and C2)
+  water_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C1", col_names = FALSE)
+  sub_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C2", col_names = FALSE)
+  
+  # Add rows for WaterSampleVol_ml and SubSampleVol_ml to sample_details
+  sample_details <- rbind(sample_details, 
+                          c("WaterSampleVol_ml", as.character(water_sample_vol[[1]])),
+                          c("SubSampleVol_ml", as.character(sub_sample_vol[[1]])))
+  
+  ###########################
   # Read cells B6:I238 from the worksheet "Input_Data"
   input_data <-
     readxl::read_excel(file_path,
@@ -106,3 +116,9 @@ read_excel_data <- function(file_path) {
 
 # Use purrr::map() to apply the modified function to all files and read the data
 extracted_data <- purrr::map(excel_files, read_excel_data)
+
+
+#### to do:
+# convert sample_details and qa_summary dfs to WIDE format.
+# append file name as a variable to the sample_details object
+# join sample_details and qa_summary dfs to the input_data df
