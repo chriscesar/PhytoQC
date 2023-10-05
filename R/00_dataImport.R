@@ -31,7 +31,12 @@ read_excel_data <- function(file_path) {
   # Assign custom column names to input_data
   colnames(input_data) <- c("Taxon", "Qualifier", "densOriginal", "densBaseplate", "densReplicate", "propOriginal", "propBaseplate", "propReplicate")
   
-  # Return a named list with filename and data frames
+  # Remove rows where all three variables are NA or zero
+  input_data <- input_data %>%
+    filter(!(is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)) &
+             !(densOriginal == 0 & densBaseplate == 0 & densReplicate == 0))
+  
+  # Return a named list with filename and filtered input_data
   return(list(filename = file_name, sample_details = sample_details, input_data = input_data))
 }
 
