@@ -20,23 +20,37 @@ read_excel_data <- function(file_path) {
   file_name <- basename(file_path)
   
   # Read cells A1:B13 from the worksheet "Sample_Details"
-  sample_details <- readxl::read_excel(file_path, sheet = "Sample_Details", range = "A1:B13", col_names = FALSE)
+  sample_details <-
+    readxl::read_excel(file_path,
+                       sheet = "Sample_Details",
+                       range = "A1:B13",
+                       col_names = FALSE)
   
   # Assign column names to sample_details
   colnames(sample_details) <- c("Variable", "Value")
   
   # Handle potentially blank cells and convert them to NA
-  sample_details$Value <- ifelse(sample_details$Value == "", NA, sample_details$Value)
+  sample_details$Value <-
+    ifelse(sample_details$Value == "", NA, sample_details$Value)
   
   # Add "Type" column to sample_details with value "SampleDetails"
   sample_details$Type <- "SampleDetails"
   
   # Read cells C1 and C2 from the worksheet "Input_Data"
-  water_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C1:C1", col_names = FALSE)[[1, 1]]
-  sub_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C2:C2", col_names = FALSE)[[1, 1]]
+  water_sample_vol <-
+    readxl::read_excel(file_path,
+                       sheet = "Input_Data",
+                       range = "C1:C1",
+                       col_names = FALSE)[[1, 1]]
+  sub_sample_vol <-
+    readxl::read_excel(file_path,
+                       sheet = "Input_Data",
+                       range = "C2:C2",
+                       col_names = FALSE)[[1, 1]]
   
   # Handle potentially blank cells and convert them to NA
-  water_sample_vol <- ifelse(water_sample_vol == "", NA, water_sample_vol)
+  water_sample_vol <-
+    ifelse(water_sample_vol == "", NA, water_sample_vol)
   sub_sample_vol <- ifelse(sub_sample_vol == "", NA, sub_sample_vol)
   
   # Create a data frame with WaterSampleVol_ml and SubSampleVol_ml variables
@@ -47,35 +61,78 @@ read_excel_data <- function(file_path) {
   )
   
   # Combine the additional rows with the original sample_details data frame
-  sample_details <- bind_rows(sample_details, sample_details_additional)
+  sample_details <-
+    bind_rows(sample_details, sample_details_additional)
   
   # Read cells B6:I238 from the worksheet "Input_Data"
-  input_data <- readxl::read_excel(file_path, sheet = "Input_Data", range = "B6:I238", col_names = FALSE)
+  input_data <-
+    readxl::read_excel(file_path,
+                       sheet = "Input_Data",
+                       range = "B6:I238",
+                       col_names = FALSE)
   
   # Assign custom column names to input_data
-  colnames(input_data) <- c("Taxon", "Qualifier", "densOriginal", "densBaseplate", "densReplicate", "propOriginal", "propBaseplate", "propReplicate")
+  colnames(input_data) <-
+    c(
+      "Taxon",
+      "Qualifier",
+      "densOriginal",
+      "densBaseplate",
+      "densReplicate",
+      "propOriginal",
+      "propBaseplate",
+      "propReplicate"
+    )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
-  input_data$Tax_Qual <- ifelse(!is.na(input_data$Qualifier), paste(input_data$Taxon, input_data$Qualifier, sep = "_"), input_data$Taxon)
+  input_data$Tax_Qual <-
+    ifelse(
+      !is.na(input_data$Qualifier),
+      paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
+      input_data$Taxon
+    )
   
   # Add "Type" column
   input_data$Type <- "TaxonAbundance"
   
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
-    select(Tax_Qual, densOriginal, densBaseplate, densReplicate, propOriginal, propBaseplate, propReplicate, Type) %>%
+    select(
+      Tax_Qual,
+      densOriginal,
+      densBaseplate,
+      densReplicate,
+      propOriginal,
+      propBaseplate,
+      propReplicate,
+      Type
+    ) %>%
     # Remove rows where all three variables are NA or zero
-    filter(!(is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)) &
-             !(densOriginal == 0 & densBaseplate == 0 & densReplicate == 0))
+    filter(!(
+      is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)
+    ) &
+      !(densOriginal == 0 &
+          densBaseplate == 0 & densReplicate == 0))
   
   # Read the "QA_Summary" table from cells A1:B5
-  qa_summary <- readxl::read_excel(file_path, sheet = "QA_Summary", range = "A1:B5", col_names = TRUE)
+  qa_summary <-
+    readxl::read_excel(file_path,
+                       sheet = "QA_Summary",
+                       range = "A1:B5",
+                       col_names = TRUE)
   
   # Add "Type" column
   qa_summary$Type <- "QASummary"
   
   # Return a named list with filename, data frames, and QA_Summary table
-  return(list(filename = file_name, sample_details = sample_details, input_data = input_data, qa_summary = qa_summary))
+  return(
+    list(
+      filename = file_name,
+      sample_details = sample_details,
+      input_data = input_data,
+      qa_summary = qa_summary
+    )
+  )
 }
 
 # Use purrr::map() to apply the function to all files and read the data
