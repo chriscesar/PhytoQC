@@ -25,8 +25,29 @@ read_excel_data <- function(file_path) {
   # Assign column names to sample_details
   colnames(sample_details) <- c("Variable", "Value")
   
+  # Handle potentially blank cells and convert them to NA
+  sample_details$Value <- ifelse(sample_details$Value == "", NA, sample_details$Value)
+  
   # Add "Type" column to sample_details with value "SampleDetails"
   sample_details$Type <- "SampleDetails"
+  
+  # Read cells C1 and C2 from the worksheet "Input_Data"
+  water_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C1:C1", col_names = FALSE)[[1, 1]]
+  sub_sample_vol <- readxl::read_excel(file_path, sheet = "Input_Data", range = "C2:C2", col_names = FALSE)[[1, 1]]
+  
+  # Handle potentially blank cells and convert them to NA
+  water_sample_vol <- ifelse(water_sample_vol == "", NA, water_sample_vol)
+  sub_sample_vol <- ifelse(sub_sample_vol == "", NA, sub_sample_vol)
+  
+  # Create a data frame with WaterSampleVol_ml and SubSampleVol_ml variables
+  sample_details_additional <- data.frame(
+    Variable = c("WaterSampleVol_ml", "SubSampleVol_ml"),
+    Value = as.character(c(water_sample_vol, sub_sample_vol)),
+    Type = "SampleDetails"
+  )
+  
+  # Combine the additional rows with the original sample_details data frame
+  sample_details <- bind_rows(sample_details, sample_details_additional)
   
   # Read cells B6:I238 from the worksheet "Input_Data"
   input_data <- readxl::read_excel(file_path, sheet = "Input_Data", range = "B6:I238", col_names = FALSE)
