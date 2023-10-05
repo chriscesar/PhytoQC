@@ -36,8 +36,11 @@ read_excel_data <- function(file_path) {
     filter(!(is.na(densOriginal) & is.na(densBaseplate) & is.na(densReplicate)) &
              !(densOriginal == 0 & densBaseplate == 0 & densReplicate == 0))
   
-  # Return a named list with filename and filtered input_data
-  return(list(filename = file_name, sample_details = sample_details, input_data = input_data))
+  # Read the "QA_Summary" table from cells A2:B5
+  qa_summary <- readxl::read_excel(file_path, sheet = "QA_Summary", range = "A1:B5", col_names = TRUE)
+  
+  # Return a named list with filename, data frames, and QA_Summary table
+  return(list(filename = file_name, sample_details = sample_details, input_data = input_data, qa_summary = qa_summary))
 }
 
 # Use purrr::map() to apply the function to all files and read the data
