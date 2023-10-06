@@ -157,12 +157,21 @@ read_excel_data <- function(file_path) {
   # Convert qa_summary to wide format
   qa_summary <- spread(qa_summary, key = Test, value = Outcome)
   
+  # Replicate sample_details and qa_summary rows to match the number of rows in input_data
+  replicated_sample_details <- sample_details[rep(seq_len(nrow(sample_details)), nrow(input_data)), ]
+  replicated_qa_summary <- qa_summary[rep(seq_len(nrow(qa_summary)), nrow(input_data)), ]
+  
+  # Bind replicated sample_details and qa_summary with input_data
+  merged_data <- as_tibble(cbind(replicated_sample_details, input_data, replicated_qa_summary))
+  
+  
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
     list(
-      sample_details = sample_details,
-      input_data = input_data,
-      qa_summary = qa_summary
+      merged_data = merged_data
+      # sample_details = sample_details,
+      # input_data = input_data#,
+      # qa_summary = qa_summary
     )
   )
 }
