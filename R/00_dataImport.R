@@ -9,7 +9,7 @@ rm(ld_pkgs)
 
 
 # Set the path to the directory containing your Excel files
-path_to_files <- "path/to/files"
+path_to_files <- "path/to/data"
 
 # Get a list of all Excel files in the directory
 excel_files <-
@@ -123,10 +123,13 @@ read_excel_data <- function(file_path) {
     file_path,
     sheet = "QA_Summary",
     range = "A1:B5",
-    col_names = TRUE
+    col_names = FALSE
   )
   
-  # Return a named list with filename, data frames, and QA_Summary table
+  # Rename specific row values in qa_summary
+  qa_summary[2:5, 1] <- c("QA_TotAbund", "QA_DomTax", "QA_SharedTax", "QA_Final")
+  
+  # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
     list(
       filename = file_name,
