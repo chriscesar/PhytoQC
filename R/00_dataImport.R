@@ -21,30 +21,35 @@ read_excel_data <- function(file_path) {
   file_name <- basename(file_path)
   
   # Read cells A1:B13 from the worksheet "Sample_Details"
-  sample_details <-
-    readxl::read_excel(file_path,
-                       sheet = "Sample_Details",
-                       range = "A1:B13",
-                       col_names = FALSE)
+  sample_details <- readxl::read_excel(
+    file_path,
+    sheet = "Sample_Details",
+    range = "A1:B13",
+    col_names = FALSE
+  )
   
   # Assign column names to sample_details
   colnames(sample_details) <- c("Variable", "Value")
   
   # Handle potentially blank cells and convert them to NA
-  sample_details$Value <-
-    ifelse(sample_details$Value == "", NA, sample_details$Value)
+  sample_details$Value <- ifelse(sample_details$Value == "", NA, sample_details$Value)
   
   # Read additional values from Input_Data sheet (cells C1 and C2)
-  water_sample_vol <-
-    readxl::read_excel(file_path,
-                       sheet = "Input_Data",
-                       range = "C1",
-                       col_names = FALSE)
-  sub_sample_vol <-
-    readxl::read_excel(file_path,
-                       sheet = "Input_Data",
-                       range = "C2",
-                       col_names = FALSE)
+  water_sample_vol <- readxl::read_excel(
+    file_path,
+    sheet = "Input_Data",
+    range = "C1",
+    col_names = FALSE,
+    col_types = "text"
+  )
+  
+  sub_sample_vol <- readxl::read_excel(
+    file_path,
+    sheet = "Input_Data",
+    range = "C2",
+    col_names = FALSE,
+    col_types = "text"
+  )
   
   # Add rows for WaterSampleVol_ml and SubSampleVol_ml to sample_details
   sample_details <- rbind(
@@ -53,34 +58,33 @@ read_excel_data <- function(file_path) {
     c("SubSampleVol_ml", as.character(sub_sample_vol[[1]]))
   )
   
-  ###########################
-  # Read cells B6:I238 from the worksheet "Input_Data"
-  input_data <-
-    readxl::read_excel(file_path,
-                       sheet = "Input_Data",
-                       range = "B6:I238",
-                       col_names = FALSE)
+  # Read cells B6:I238 from the worksheet "Input_Data" as character values
+  input_data <- readxl::read_excel(
+    file_path,
+    sheet = "Input_Data",
+    range = "B6:I238",
+    col_names = FALSE,
+    col_types = "text"
+  )
   
   # Assign custom column names to input_data
-  colnames(input_data) <-
-    c(
-      "Taxon",
-      "Qualifier",
-      "Original_dens",
-      "Baseplate_dens",
-      "Replicate_dens",
-      "Original_prop",
-      "Baseplate_prop",
-      "Replicate_prop"
-    )
+  colnames(input_data) <- c(
+    "Taxon",
+    "Qualifier",
+    "Original_dens",
+    "Baseplate_dens",
+    "Replicate_dens",
+    "Original_prop",
+    "Baseplate_prop",
+    "Replicate_prop"
+  )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
-  input_data$Tax_Qual <-
-    ifelse(
-      !is.na(input_data$Qualifier),
-      paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
-      input_data$Taxon
-    )
+  input_data$Tax_Qual <- ifelse(
+    !is.na(input_data$Qualifier),
+    paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
+    input_data$Taxon
+  )
   
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
@@ -115,11 +119,12 @@ read_excel_data <- function(file_path) {
     filter(!(is.na(dens)) & !(dens == 0))
   
   # Read the "QA_Summary" table from cells A1:B5
-  qa_summary <-
-    readxl::read_excel(file_path,
-                       sheet = "QA_Summary",
-                       range = "A1:B5",
-                       col_names = TRUE)
+  qa_summary <- readxl::read_excel(
+    file_path,
+    sheet = "QA_Summary",
+    range = "A1:B5",
+    col_names = TRUE
+  )
   
   # Return a named list with filename, data frames, and QA_Summary table
   return(
@@ -133,8 +138,11 @@ read_excel_data <- function(file_path) {
 }
 
 # Use purrr::map() to apply the modified function to all files and read the data
+start.time <- Sys.time()
 extracted_data <- purrr::map(excel_files, read_excel_data)
-
+end.time <- Sys.time()
+time.taken <- round(end.time - start.time,2)
+time.taken
 
 #### to do:
 # convert sample_details and qa_summary dfs to WIDE format.
