@@ -58,6 +58,9 @@ read_excel_data <- function(file_path) {
     c("SubSampleVol_ml", as.character(sub_sample_vol[[1]]))
   )
   
+  # Convert sample_details to wide format
+  sample_details <- spread(sample_details, key = Variable, value = Value)
+  
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
   input_data <- readxl::read_excel(
     file_path,
@@ -123,11 +126,14 @@ read_excel_data <- function(file_path) {
     file_path,
     sheet = "QA_Summary",
     range = "A1:B5",
-    col_names = FALSE
+    col_names = TRUE
   )
   
   # Rename specific row values in qa_summary
-  qa_summary[2:5, 1] <- c("QA_TotAbund", "QA_DomTax", "QA_SharedTax", "QA_Final")
+  qa_summary[, 1] <- c("QA1_TotAbund", "QA2_DomTax", "QA3_SharedTax", "QA4_Final")
+  
+  # Convert qa_summary to wide format
+  qa_summary <- spread(qa_summary, key = Test, value = Outcome)
   
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
