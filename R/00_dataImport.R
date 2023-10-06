@@ -167,23 +167,24 @@ read_excel_data <- function(file_path) {
   
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
-    list(
+    # list(
       merged_data = merged_data
       # sample_details = sample_details,
       # input_data = input_data#,
       # qa_summary = qa_summary
-    )
+    # )
   )
 }
 
 # Use purrr::map() to apply the modified function to all files and read the data
-start.time <- Sys.time()
-extracted_data <- purrr::map(excel_files, read_excel_data)
-end.time <- Sys.time()
+start.time <- Sys.time() # start timer
+
+# extract data as a list
+extracted_data_list <- purrr::map(excel_files, read_excel_data)
+
+# Combine list elements into a single data frame using dplyr::bind_rows()
+extracted_data <- dplyr::bind_rows(extracted_data_list)
+
+end.time <- Sys.time() #stop timer
 time.taken <- round(end.time - start.time,2)
 time.taken
-
-#### to do:
-# convert sample_details and qa_summary dfs to WIDE format.
-# append file name as a variable to the sample_details object
-# join sample_details and qa_summary dfs to the input_data df
