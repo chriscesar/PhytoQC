@@ -17,9 +17,7 @@ excel_files <-
 
 # Function to read specific cells from a workbook and associate with filename
 read_excel_data <- function(file_path) {
-  # # Get the filename with the extension
-  # file_name <- basename(file_path)
-  
+
   # Read cells A1:B13 from the worksheet "Sample_Details"
   sample_details <- readxl::read_excel(file_path,
                                        sheet = "Sample_Details",
@@ -156,7 +154,6 @@ read_excel_data <- function(file_path) {
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
     list(
-      filename = file_name,
       sample_details = sample_details,
       input_data = input_data,
       qa_summary = qa_summary
