@@ -78,6 +78,12 @@ read_excel_data <- function(file_path) {
   sample_details <-
     spread(sample_details, key = Variable, value = Value)
   
+  # Extract file name with extension from the file path
+  file_name <- basename(file_path)
+  
+  # Add the file_name to the sample_details data frame
+  sample_details <- cbind("00FileName" = file_name, sample_details)
+  
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
   input_data <- readxl::read_excel(
     file_path,
