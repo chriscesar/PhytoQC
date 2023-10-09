@@ -1,6 +1,7 @@
 ## 00_dataImport.R
 # import data from >250 workbooks into long format
 
+# admin ####
 # load packages #
 ld_pkgs <- c("tidyverse","purrr","readxl")
 vapply(ld_pkgs, library, logical(1L),
@@ -8,12 +9,18 @@ vapply(ld_pkgs, library, logical(1L),
 rm(ld_pkgs)
 
 
-# Set the path to the directory containing your Excel files
-path_to_files <- "path/to/data"
+# Set the path to the parent directory containing Excel files
+path_to_files <-
+  "C:/Users/ccesar/OneDrive - Defra/Desktop/MyFiles-notBackedUp/Tasks/Phyto QC/QA Project"
 
-# Get a list of all Excel files in the directory
+# Get a list of all Excel files in the directory and sub-directories
 excel_files <-
-  list.files(path_to_files, pattern = ".xls$|.xlsx$", full.names = TRUE)
+  list.files(
+    path_to_files,
+    pattern = ".xls$|.xlsx$", #files ending in Excel file types
+    full.names = TRUE,
+    recursive = TRUE # look in subfolders
+  )
 
 # Function to read specific cells from a workbook and associate with filename
 read_excel_data <- function(file_path) {
@@ -185,6 +192,23 @@ extracted_data_list <- purrr::map(excel_files, read_excel_data)
 # Combine list elements into a single data frame using dplyr::bind_rows()
 extracted_data <- dplyr::bind_rows(extracted_data_list)
 
+### save data
+write.csv(extracted_data, file = "data/out/extracted_data.csv",
+          row.names = FALSE)
+
 end.time <- Sys.time() #stop timer
 time.taken <- round(end.time - start.time,2)
 time.taken
+
+### tidy up ####
+rm(extracted_data, extracted_data_list,
+   end.time,
+   excel_files,
+   path_to_files,
+   start.time,
+   time.taken,
+   read_excel_data)
+
+detach("package:readxl", unload = TRUE)
+detach("package:tidyverse", unload = TRUE)
+detach("package:purrr", unload = TRUE)
