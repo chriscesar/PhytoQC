@@ -10,8 +10,7 @@ rm(ld_pkgs)
 
 
 # Set the path to the parent directory containing Excel files
-path_to_files <-
-  "C:/Users/ccesar/OneDrive - Defra/Desktop/MyFiles-notBackedUp/Tasks/Phyto QC/QA Project"
+path_to_files <- "path/to/data"
 
 # Get a list of all Excel files in the directory and sub-directories
 excel_files <-
