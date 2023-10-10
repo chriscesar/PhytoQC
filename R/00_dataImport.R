@@ -88,7 +88,7 @@ read_excel_data <- function(file_path) {
   file_name <- basename(file_path)
   
   # Add the file_name to the sample_details data frame
-  sample_details <- cbind("00FileName" = file_name, sample_details)
+  sample_details <- cbind("SD00FileName" = file_name, sample_details)
   
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
   input_data <- readxl::read_excel(
@@ -191,10 +191,16 @@ extracted_data <- dplyr::bind_rows(extracted_data_list)
 
 ### save data
 ## all data
-write.csv(extracted_data, file = "data/out/extracted_data_ALL.csv",
+write.csv(extracted_data,
+          file = "data/out/extracted_data_ALL.csv",
           row.names = FALSE)
 ## Lab Swap
-write.csv(extracted_data[extracted_data$02_LabSwap==], file = "data/out/extracted_data_ALL.csv",
+write.csv(extracted_data[extracted_data$SD02_LabSwap=="Yes",],
+          file = "data/out/extracted_data_LabSwap.csv",
+          row.names = FALSE)
+## Non-Lab Swap
+write.csv(extracted_data[extracted_data$SD02_LabSwap=="No",],
+          file = "data/out/extracted_data_NonLabSwap.csv",
           row.names = FALSE)
 
 end.time <- Sys.time() #stop timer
@@ -213,3 +219,6 @@ rm(extracted_data, extracted_data_list,
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
 detach("package:purrr", unload = TRUE)
+
+### TO DO:
+# investigate worksheet errors with lab
