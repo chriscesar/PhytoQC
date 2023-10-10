@@ -10,7 +10,7 @@ rm(ld_pkgs)
 
 
 # Set the path to the parent directory containing Excel files
-path_to_files <- "path/to/data"
+path_to_files <- "C:/Users/ccesar/OneDrive - Defra/Desktop/MyFiles-notBackedUp/Tasks/Phyto QC/QA Project"
 
 # Get a list of all Excel files in the directory and sub-directories
 excel_files <-
@@ -63,21 +63,21 @@ read_excel_data <- function(file_path) {
   
   # Rename rows to maintain correct order
   sample_details[, 1] <- c(
-    "01_AnaylsisLab",
-    "02_LabSwap",
-    "03_OriginalAnalyst",
-    "04_AnalysisDate_Orig",
-    "05_NameOfSurvey_WFD",
-    "06_SampleDate",
-    "07_EAOldSiteCode",
-    "08_EAWIMSCode",
-    "09_InternalSampleID",
-    "10_AuditAnalyst*",
-    "11_AuditDate_BaseRec",
-    "12_AuditDate_RepSub",
-    "13_Comments",
-    "14_WaterSampleVol_ml",
-    "15_SubSampleVol_ml"
+    "SD01_AnaylsisLab",
+    "SD02_LabSwap",
+    "SD03_OriginalAnalyst",
+    "SD04_AnalysisDate_Orig",
+    "SD05_NameOfSurvey_WFD",
+    "SD06_SampleDate",
+    "SD07_EAOldSiteCode",
+    "SD08_EAWIMSCode",
+    "SD09_InternalSampleID",
+    "SD10_AuditAnalyst*",
+    "SD11_AuditDate_BaseRec",
+    "SD12_AuditDate_RepSub",
+    "SD13_Comments",
+    "SD14_WaterSampleVol_ml",
+    "SD15_SubSampleVol_ml"
   )
   
   # Convert sample_details to wide format
@@ -158,7 +158,10 @@ read_excel_data <- function(file_path) {
   
   # Rename specific row values in qa_summary
   qa_summary[, 1] <-
-    c("QA1_TotAbund", "QA2_DomTax", "QA3_SharedTax", "QA4_Final")
+    c("QA01_TotAbund",
+      "QA02_DomTax",
+      "QA03_SharedTax",
+      "QA04_Final")
   
   # Convert qa_summary to wide format
   qa_summary <- spread(qa_summary, key = Test, value = Outcome)
@@ -173,14 +176,9 @@ read_excel_data <- function(file_path) {
   
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
-    # list(
-      merged_data = merged_data
-      # sample_details = sample_details,
-      # input_data = input_data#,
-      # qa_summary = qa_summary
-    # )
+    merged_data = merged_data
   )
-}
+  }
 
 # Use purrr::map() to apply the modified function to all files and read the data
 start.time <- Sys.time() # start timer
@@ -192,7 +190,11 @@ extracted_data_list <- purrr::map(excel_files, read_excel_data)
 extracted_data <- dplyr::bind_rows(extracted_data_list)
 
 ### save data
-write.csv(extracted_data, file = "data/out/extracted_data.csv",
+## all data
+write.csv(extracted_data, file = "data/out/extracted_data_ALL.csv",
+          row.names = FALSE)
+## Lab Swap
+write.csv(extracted_data[extracted_data$02_LabSwap==], file = "data/out/extracted_data_ALL.csv",
           row.names = FALSE)
 
 end.time <- Sys.time() #stop timer
