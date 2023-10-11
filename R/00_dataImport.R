@@ -194,14 +194,25 @@ extracted_data <- dplyr::bind_rows(extracted_data_list)
 write.csv(extracted_data,
           file = "data/out/extracted_data_ALL.csv",
           row.names = FALSE)
+
 ## Lab Swap
-write.csv(extracted_data[extracted_data$SD02_LabSwap=="Yes",],
+extracted_dataLS <- extracted_data %>% 
+  dplyr::filter(.,SD02_LabSwap == "Yes")
+
+write.csv(extracted_dataLS,
           file = "data/out/extracted_data_LabSwap.csv",
           row.names = FALSE)
+rm(extracted_dataLS)
+
 ## Non-Lab Swap
-write.csv(extracted_data[extracted_data$SD02_LabSwap=="No",],
+extracted_dataNLS <- extracted_data %>% 
+  dplyr::filter(.,SD02_LabSwap == "No") %>% 
+  dplyr::filter(., !is.na(SD00FileName))
+
+write.csv(extracted_dataNLS,
           file = "data/out/extracted_data_NonLabSwap.csv",
           row.names = FALSE)
+rm(extracted_dataNLS)
 
 end.time <- Sys.time() #stop timer
 time.taken <- round(end.time - start.time,2)
@@ -222,3 +233,5 @@ detach("package:purrr", unload = TRUE)
 
 ### TO DO:
 # investigate worksheet errors with lab
+# where do NA values arise? - suspect linked to 'partially duplicated' "WB QA 150 TCO007P Nov 2022.xlsx"
+# check that all files are imported into the data
