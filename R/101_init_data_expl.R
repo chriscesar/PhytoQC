@@ -17,8 +17,7 @@ theme_set(ggthemes::theme_few())###set theme for all ggplot objects
 # load data 
 df0 <- as_tibble(read.csv("data/out/extracted_data_NonLabSwap.csv"))
 
-
-#################### currently generating error msg....
+# Widen data and run MDS ####
 
 ### filter by AnalysisType = Original & widen
 df0_orig_w <- df0 %>% 
@@ -35,31 +34,31 @@ df0_orig_w <- df0 %>%
     SD01_AnaylsisLab,
     SD02_LabSwap,
     SD03_OriginalAnalyst,
-    SD04_AnalysisDate_Orig,
+    SD04_AnalysisDateOrig,
     SD05_NameOfSurvey_WFD,
     SD06_SampleDate,
     SD07_EAOldSiteCode,
     SD08_EAWIMSCode,
     SD09_InternalSampleID,
-    SD10_AuditAnalyst.,
-    SD11_AuditDate_BaseRec,
-    SD12_AuditDate_RepSub,
+    SD10_AuditAnalyst,
+    SD11_AuditDateBaseRec,
+    SD12_AuditDateRepSub,
     SD13_Comments,
     SD14_WaterSampleVol_ml,
     SD15_SubSampleVol_ml,
     AnalysisType,
     Tax_Qual
-  )
-  pivot_wider(names_from = Tax_Qual, values_from = dens) %>% 
+  ) %>% 
+  pivot_wider(names_from = Tax_Qual, values_from = dens,
+              values_fill = 0) %>% 
   ungroup()
 
-
-
-xx%>%
-  dplyr::group_by(SD00FileName, SD01_AnaylsisLab, SD02_LabSwap, SD03_OriginalAnalyst,
-                  SD04_AnalysisDate_Orig, SD05_NameOfSurvey_WFD, SD06_SampleDate, SD07_EAOldSiteCode,
-                  SD08_EAWIMSCode, SD09_InternalSampleID, SD10_AuditAnalyst., SD11_AuditDate_BaseRec,
-                  SD12_AuditDate_RepSub, SD13_Comments, SD14_WaterSampleVol_ml, SD15_SubSampleVol_ml, AnalysisType,
-                  Tax_Qual) %>%
-  dplyr::summarise(n = dplyr::n(), .groups = "drop") %>%
-  dplyr::filter(n > 1L)
+### create temporary file for ordination
+# remove metadata
+dftmp <- df0_orig_w %>% 
+  select(!c(SD00FileName:AnalysisType))
+set.seed(pi);ord <- vegan::metaMDS(dftmp,
+                      try = 100,
+                      trymax = 1000,
+                      k = 3)
+plot(ord)
