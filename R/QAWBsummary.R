@@ -34,10 +34,38 @@ cbPalette <- c("#999999", #153/153/153
 ### taxon data
 df0 <- as_tibble(read.csv("data/out/extracted_data_ALL.csv"))
 
+### to do ###
+# assign values to correct dates
+
+
 #remove taxon data
 df <- df0 %>% 
   dplyr::select(.,-c(Tax_Qual,dens,prop,
                      SD14_WaterSampleVol_ml,
                      SD15_SubSampleVol_ml,
                      AnalysisType)) %>% 
+  filter(.,!SD02_LabSwap=="Yes") %>% 
   distinct()
+
+# summarise Passes/fails ###
+## overall
+df %>% 
+  group_by(SD01_AnaylsisLab,QA04_Final) %>% 
+  count()
+
+## Total abundance
+df %>% 
+  group_by(SD01_AnaylsisLab,QA01_TotAbund) %>% 
+  count()
+
+## Dominant taxa
+df %>% 
+  group_by(SD01_AnaylsisLab,QA02_DomTax) %>% 
+  count()
+
+## Shared taxa
+df %>% 
+  group_by(SD01_AnaylsisLab,QA03_SharedTax) %>% 
+  count()
+
+
