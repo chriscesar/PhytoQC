@@ -26,17 +26,28 @@ cbPalette <- c("#999999", #153/153/153
                "#C5C221",
                "#5531A1",
                "#B32C55",
-               "#BB3593" 
-               
-)
+               "#BB3593"
+               )
 
 ### load data ####
 ### taxon data
 df0 <- as_tibble(read.csv("data/out/extracted_data_ALL.csv"))
 
-### to do ###
 # assign values to correct dates
+df0 %>% 
+  filter(nchar(df0$SD06_SampleDate)==5) -> df_tmp_5
 
+df_tmp_5$SD06_SampleDate <- as.Date(as.numeric(df_tmp_5$SD06_SampleDate),
+                                    origin = "1899-12-30")
+
+df0 %>% 
+  filter(nchar(df0$SD06_SampleDate)!=5) -> df_tmp_n5
+
+df_tmp_n5$SD06_SampleDate <- as.Date(df_tmp_n5$SD06_SampleDate,
+                                     format = "%d/%m/%Y")
+
+### join the data together
+df0 <- rbind(df_tmp_n5,df_tmp_5); rm(df_tmp_n5,df_tmp_5)
 
 #remove taxon data
 df <- df0 %>% 
