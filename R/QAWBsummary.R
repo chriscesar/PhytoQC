@@ -64,19 +64,57 @@ df %>%
   group_by(SD01_AnaylsisLab,QA04_Final) %>% 
   count()
 
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA04_Final) %>% 
+  count()
+
+###
+
 ## Total abundance
 df %>% 
   group_by(SD01_AnaylsisLab,QA01_TotAbund) %>% 
   count()
 
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA01_TotAbund) %>% 
+  count()
+
+###
+
+
 ## Dominant taxa
 df %>% 
-  group_by(SD01_AnaylsisLab,QA02_DomTax) %>% 
+  group_by(SD01_AnaylsisLab,
+           QA02_DomTax) %>% 
   count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA02_DomTax) %>% 
+  count()
+
+###
+
 
 ## Shared taxa
 df %>% 
   group_by(SD01_AnaylsisLab,QA03_SharedTax) %>% 
   count()
 
+#by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA03_SharedTax) %>% 
+  count()
+
+###
 
