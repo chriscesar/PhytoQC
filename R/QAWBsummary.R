@@ -33,24 +33,28 @@ cbPalette <- c("#999999", #153/153/153
 ### taxon data
 df0 <- as_tibble(read.csv("data/out/extracted_data_ALL.csv"))
 
+### keep only non labswaps
+df0NoSwp <- df0 %>%
+  filter(., SD02_LabSwap == "No")
+
 # assign values to correct dates
-df0 %>% 
-  filter(nchar(df0$SD06_SampleDate)==5) -> df_tmp_5
+df0NoSwp %>% 
+  filter(nchar(SD06_SampleDate)==5) -> df_tmp_5
 
 df_tmp_5$SD06_SampleDate <- as.Date(as.numeric(df_tmp_5$SD06_SampleDate),
                                     origin = "1899-12-30")
 
 df0 %>% 
-  filter(nchar(df0$SD06_SampleDate)!=5) -> df_tmp_n5
+  filter(nchar(SD06_SampleDate)!=5) -> df_tmp_n5
 
 df_tmp_n5$SD06_SampleDate <- as.Date(df_tmp_n5$SD06_SampleDate,
                                      format = "%d/%m/%Y")
 
 ### join the data together
-df0 <- rbind(df_tmp_n5,df_tmp_5); rm(df_tmp_n5,df_tmp_5)
+df0NoSwp <- rbind(df_tmp_n5,df_tmp_5); rm(df_tmp_n5,df_tmp_5)
 
 #remove taxon data
-df <- df0 %>% 
+df <- df0NoSwp %>% 
   dplyr::select(.,-c(Tax_Qual,dens,prop,
                      SD14_WaterSampleVol_ml,
                      SD15_SubSampleVol_ml,
@@ -59,6 +63,17 @@ df <- df0 %>%
   distinct()
 
 # summarise Passes/fails ###
+## how many samples by lab?
+df %>% 
+  group_by(SD01_AnaylsisLab) %>% 
+  count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab) %>% 
+  count()
+
 ## overall
 df %>% 
   group_by(SD01_AnaylsisLab,QA04_Final) %>% 
@@ -87,7 +102,6 @@ df %>%
 
 ###
 
-
 ## Dominant taxa
 df %>% 
   group_by(SD01_AnaylsisLab,
@@ -102,7 +116,6 @@ df %>%
   count()
 
 ###
-
 
 ## Shared taxa
 df %>% 
