@@ -44,7 +44,7 @@ df0NoSwp %>%
 df_tmp_5$SD06_SampleDate <- as.Date(as.numeric(df_tmp_5$SD06_SampleDate),
                                     origin = "1899-12-30")
 
-df0 %>% 
+df0NoSwp %>% 
   filter(nchar(SD06_SampleDate)!=5) -> df_tmp_n5
 
 df_tmp_n5$SD06_SampleDate <- as.Date(df_tmp_n5$SD06_SampleDate,
@@ -85,7 +85,6 @@ df %>%
            SD01_AnaylsisLab,
            QA04_Final) %>% 
   count()
-
 ###
 
 ## Total abundance
@@ -99,7 +98,6 @@ df %>%
            SD01_AnaylsisLab,
            QA01_TotAbund) %>% 
   count()
-
 ###
 
 ## Dominant taxa
@@ -114,7 +112,6 @@ df %>%
            SD01_AnaylsisLab,
            QA02_DomTax) %>% 
   count()
-
 ###
 
 ## Shared taxa
@@ -128,6 +125,100 @@ df %>%
            SD01_AnaylsisLab,
            QA03_SharedTax) %>% 
   count()
+###
+rm(df)
 
+# summarise lab-swap data ####
+### keep only non labswaps
+df0Swp <- df0 %>%
+  filter(., SD02_LabSwap == "Yes")
+
+# assign values to correct dates
+df0Swp %>% 
+  filter(nchar(SD06_SampleDate)==5) -> df_tmp_5
+
+df_tmp_5$SD06_SampleDate <- as.Date(as.numeric(df_tmp_5$SD06_SampleDate),
+                                    origin = "1899-12-30")
+
+df0Swp %>% 
+  filter(nchar(SD06_SampleDate)!=5) -> df_tmp_n5
+
+df_tmp_n5$SD06_SampleDate <- as.Date(df_tmp_n5$SD06_SampleDate,
+                                     format = "%d/%m/%Y")
+
+### join the data together
+df0Swp <- rbind(df_tmp_n5,df_tmp_5); rm(df_tmp_n5,df_tmp_5)
+
+#remove taxon data
+df <- df0Swp %>% 
+  dplyr::select(.,-c(Tax_Qual,dens,prop,
+                     SD14_WaterSampleVol_ml,
+                     SD15_SubSampleVol_ml,
+                     AnalysisType)) %>% 
+  filter(.,!SD02_LabSwap=="No") %>% 
+  distinct()
+
+# summarise Passes/fails ###
+## how many samples by lab?
+df %>% 
+  group_by(SD01_AnaylsisLab) %>% 
+  count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab) %>% 
+  count()
 ###
 
+## overall
+df %>% 
+  group_by(SD01_AnaylsisLab,QA04_Final) %>% 
+  count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA04_Final) %>% 
+  count()
+
+## Total abundance
+df %>% 
+  group_by(SD01_AnaylsisLab,QA01_TotAbund) %>% 
+  count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA01_TotAbund) %>% 
+  count()
+###
+
+## Dominant taxa
+df %>% 
+  group_by(SD01_AnaylsisLab,
+           QA02_DomTax) %>% 
+  count()
+
+# by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA02_DomTax) %>% 
+  count()
+###
+
+## Shared taxa
+df %>% 
+  group_by(SD01_AnaylsisLab,QA03_SharedTax) %>% 
+  count()
+
+#by year
+df %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           QA03_SharedTax) %>% 
+  count()
+###
