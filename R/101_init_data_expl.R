@@ -3,7 +3,7 @@
 
 # admin ####
 # load packages #
-ld_pkgs <- c("tidyverse","ggthemes","vegan", "rgl")
+ld_pkgs <- c("tidyverse","ggthemes","vegan", "rgl", "mvabund")
 vapply(ld_pkgs, library, logical(1L),
        character.only = TRUE, logical.return = TRUE)
 rm(ld_pkgs)
@@ -110,5 +110,53 @@ axes3d();title3d(xlab="NMDS1",
 
 # statistical comparisons ####
 ### do assemblages differ by lab?
+## vegan version
 (fit01 <- vegan::adonis2(dftmp ~ df0_orig_w$SD01_AnaylsisLab,
                          permutations = perms))
+
+## mvabund
+mvdftmp <- mvabund(dftmp)
+fit02 <- manyglm(mvdftmp ~ df0_orig_w$SD01_AnaylsisLab)
+# anova_fit02 <- mvabund::anova.manyglm(fit02,p.uni = "adjusted")
+
+### mvabund based on presence/absence data
+dftmp_bin <- dftmp
+dftmp_bin[dftmp_bin>0] = 1
+mvdftmp_bin <- mvabund(dftmp_bin)
+# summary(fit03 <- manyglm(mvdftmp_bin~df0_orig_w$SD01_AnaylsisLab,
+#                  family="binomial"))
+# anova_fit03 <- mvabund::anova.manyglm(fit03,
+#                                       p.uni = "adjusted")
+# saveRDS(anova_fit03, file = "data/out/anova_fit03_binomial.Rdat")
+anova_fit03 <- readRDS("data/out/anova_fit03_binomial.Rdat")
+
+# which taxa differ?
+tx <- as_tibble(t(anova_fit03$uni.p))
+tx$nm <- colnames(anova_fit03$uni.p)
+tx <- tx[,-1]
+txsig <- tx[tx$`df0_orig_w$SD01_AnaylsisLab`<0.06,]
+
+# what proportion significantly differ?
+nrow(txsig)/nrow(tx)*100
+
+### prevalence of these by lab
+dftmp_bin$Lab <- df0_orig_w$SD01_AnaylsisLab
+dftmp_bin %>% 
+  group_by(Lab) %>% 
+  summarise(across(`Cerataulina pelagica`:`Indet. naked dinoflagellate_>50`,
+                   mean, na.rm=TRUE)) %>% 
+  t(.) -> mean_bin
+
+mean_bin <- as_tibble(mean_bin)
+mean_bin <- mean_bin[-1,]
+colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnaylsisLab)[2],
+                        unique(df0_orig_w$SD01_AnaylsisLab)[1])
+mean_bin$tx <- tx$nm
+
+### retain only 'significant' taxa
+(mean_bin <- mean_bin[mean_bin$tx %in% txsig$nm,])
+
+mean_bin$lab_more <- apply(mean_bin, 1, function(row) {
+  colnames(mean_bin)[which.max(row)]
+  })
+
