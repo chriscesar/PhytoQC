@@ -154,7 +154,7 @@ colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnaylsisLab)[2],
 mean_bin$tx <- tx$nm
 
 ### retain only 'significant' taxa
-(mean_bin <- mean_bin[mean_bin$tx %in% txsig$nm,])
+View(mean_bin <- mean_bin[mean_bin$tx %in% txsig$nm,])
 
 mean_bin$lab_more <- apply(mean_bin, 1, function(row) {
   colnames(mean_bin)[which.max(row)]
