@@ -17,12 +17,14 @@ excel_files <-
   list.files(
     path_to_files,
     pattern = ".xls$|.xlsx$", #files ending in Excel file types
-    full.names = TRUE,
+    full.names = TRUE, #returns full filepath
     recursive = TRUE # look in subfolders
   )
 
 # Function to read specific cells from a workbook and associate with filename
 read_excel_data <- function(file_path) {
+  
+  ## Extract info from Sample_Details worksheet ##
 
   # Read cells A1:B13 from the worksheet "Sample_Details"
   sample_details <- readxl::read_excel(file_path,
@@ -44,7 +46,7 @@ read_excel_data <- function(file_path) {
     range = "C1",
     col_names = FALSE,
     col_types = "text"
-  )
+    )
   
   sub_sample_vol <- readxl::read_excel(
     file_path,
@@ -52,14 +54,14 @@ read_excel_data <- function(file_path) {
     range = "C2",
     col_names = FALSE,
     col_types = "text"
-  )
+    )
   
   # Add rows for WaterSampleVol_ml and SubSampleVol_ml to sample_details
   sample_details <- rbind(
     sample_details,
     c("WaterSampleVol_ml", as.character(water_sample_vol[[1]])),
     c("SubSampleVol_ml", as.character(sub_sample_vol[[1]]))
-  )
+    )
   
   # Rename rows to maintain correct order
   sample_details[, 1] <- c(
@@ -78,7 +80,7 @@ read_excel_data <- function(file_path) {
     "SD13_Comments",
     "SD14_WaterSampleVol_ml",
     "SD15_SubSampleVol_ml"
-  )
+    )
   
   # Convert sample_details to wide format
   sample_details <-
@@ -90,6 +92,8 @@ read_excel_data <- function(file_path) {
   # Add the file_name to the sample_details data frame
   sample_details <- cbind("SD00FileName" = file_name, sample_details)
   
+  ## Extract info from Input_Data worksheet ##
+  
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
   input_data <- readxl::read_excel(
     file_path,
@@ -97,7 +101,7 @@ read_excel_data <- function(file_path) {
     range = "B6:I238",
     col_names = FALSE,
     col_types = "text"
-  )
+    )
   
   # Assign custom column names to input_data
   colnames(input_data) <- c(
@@ -109,14 +113,14 @@ read_excel_data <- function(file_path) {
     "Original_prop",
     "Baseplate_prop",
     "Replicate_prop"
-  )
+    )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
   input_data$Tax_Qual <- ifelse(
     !is.na(input_data$Qualifier),
     paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
     input_data$Taxon
-  )
+    )
   
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
@@ -143,12 +147,15 @@ read_excel_data <- function(file_path) {
             Baseplate_prop == 0 & Replicate_prop == 0
         )
     ) %>%
+    
     ##convert to long
     pivot_longer(-Tax_Qual,
                  names_to = c("AnalysisType", ".value"),
                  names_sep = "_") %>%
     #remove NA or 0 values
     filter(!(is.na(dens)) & !(dens == 0))
+  
+  ## Extract info from QA_Summary worksheet ##
   
   # Read the "QA_Summary" table from cells A1:B5
   qa_summary <- readxl::read_excel(file_path,
