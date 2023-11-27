@@ -102,7 +102,7 @@ scores_site$Class_OppMac <- dfwtrim$`Opp Mac`
 scores_species <- as.data.frame(scores(ord,display = "species"))
 scores_species$lb <-  make.cepnames(row.names(scores_species))#shorten names
 
-#### generate mean centroids ####
+#### calc centroids ####
 ## by Typology
 scores_site %>% 
   group_by(Typology) %>%
@@ -186,8 +186,8 @@ ggplot()+
   #            show.legend = FALSE)+
   geom_point(data=scores_site, show.legend=TRUE,
              aes(x=NMDS1, y=NMDS2,
-                 fill = TypologyCode,
-                 shape = TypologyCode),
+                 fill = Region,
+                 shape = Region),
              size=3)+
   scale_fill_manual(values=c(cbPalette))+
   scale_colour_manual(values=c(cbPalette))+
@@ -195,11 +195,14 @@ ggplot()+
   scale_shape_manual(values = rep(c(24,25,23),each=2))+
   xlim(0.00004,0.000155)+
   ylim(-0.00001,0.00004)+
-  geom_textbox(data=centr_TypolCode,aes(x=NMDS1,y=NMDS2,label=TypologyCode))+
+  # geom_textbox(data=centr_Region,aes(x=NMDS1,y=NMDS2,label=Region),
+  #              hjust=0.5,width = unit(0.1, "npc"),
+  #              fontface="bold")+
   coord_equal()+
   # labs(title="Non-metric Multidimensional Scaling of zooplankton taxon abundances",
   #      subtitle="Colours & shapes indicate region",
   #      caption=paste0("Stress = ",round(ord$stress,3),"\nSamples gathered between ",
   #                     min(dfw$sample.date)," & ",max(dfw$sample.date)))+
   theme(legend.title = element_blank(),
-        axis.title = element_text(face="bold"))
+        axis.title = element_text(face="bold")) #+
+  # facet_wrap(.~year)
