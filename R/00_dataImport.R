@@ -133,7 +133,7 @@ read_excel_data <- function(file_path) {
       Baseplate_prop,
       Replicate_prop
     ) %>%
-    # Remove rows where all variables are NA or zero
+    # Remove rows where all count values are NA or zero
     filter(
       !(
         is.na(Original_dens) &
@@ -148,7 +148,7 @@ read_excel_data <- function(file_path) {
         )
     ) %>%
     
-    ##convert to long
+    ##convert count data to long format
     pivot_longer(-Tax_Qual,
                  names_to = c("AnalysisType", ".value"),
                  names_sep = "_") %>%
