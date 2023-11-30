@@ -65,20 +65,13 @@ read_excel_data <- function(file_path) {
   
   # Rename rows to maintain correct order
   sample_details[, 1] <- c(
-    "SD01_AnaylsisLab",
-    "SD02_LabSwap",
-    "SD03_OriginalAnalyst",
-    "SD04_AnalysisDateOrig",
-    "SD05_NameOfSurvey_WFD",
-    "SD06_SampleDate",
-    "SD07_EAOldSiteCode",
-    "SD08_EAWIMSCode",
-    "SD09_InternalSampleID",
-    "SD10_AuditAnalyst",
-    "SD11_AuditDateBaseRec",
-    "SD12_AuditDateRepSub",
-    "SD13_Comments",
-    "SD14_WaterSampleVol_ml",
+    "SD01_AnaylsisLab", "SD02_LabSwap",
+    "SD03_OriginalAnalyst", "SD04_AnalysisDateOrig",
+    "SD05_NameOfSurvey_WFD", "SD06_SampleDate",
+    "SD07_EAOldSiteCode", "SD08_EAWIMSCode",
+    "SD09_InternalSampleID", "SD10_AuditAnalyst",
+    "SD11_AuditDateBaseRec", "SD12_AuditDateRepSub",
+    "SD13_Comments", "SD14_WaterSampleVol_ml",
     "SD15_SubSampleVol_ml"
     )
   
@@ -99,20 +92,15 @@ read_excel_data <- function(file_path) {
     file_path,
     sheet = "Input_Data",
     range = "B6:I238",
-    col_names = FALSE,
-    col_types = "text"
+    col_names = FALSE, col_types = "text"
     )
   
   # Assign custom column names to input_data
   colnames(input_data) <- c(
-    "Taxon",
-    "Qualifier",
-    "Original_dens",
-    "Baseplate_dens",
-    "Replicate_dens",
-    "Original_prop",
-    "Baseplate_prop",
-    "Replicate_prop"
+    "Taxon", "Qualifier",
+    "Original_dens", "Baseplate_dens",
+    "Replicate_dens", "Original_prop",
+    "Baseplate_prop", "Replicate_prop"
     )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
@@ -125,12 +113,9 @@ read_excel_data <- function(file_path) {
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
     select(
-      Tax_Qual,
-      Original_dens,
-      Baseplate_dens,
-      Replicate_dens,
-      Original_prop,
-      Baseplate_prop,
+      Tax_Qual, Original_dens,
+      Baseplate_dens, Replicate_dens,
+      Original_prop, Baseplate_prop,
       Replicate_prop
     ) %>%
     # Remove rows where all count values are NA or zero
@@ -147,8 +132,7 @@ read_excel_data <- function(file_path) {
             Baseplate_prop == 0 & Replicate_prop == 0
         )
     ) %>%
-    
-    ##convert count data to long format
+       ##convert count data to long format
     pivot_longer(-Tax_Qual,
                  names_to = c("AnalysisType", ".value"),
                  names_sep = "_") %>%
@@ -165,10 +149,8 @@ read_excel_data <- function(file_path) {
   
   # Rename specific row values in qa_summary
   qa_summary[, 1] <-
-    c("QA01_TotAbund",
-      "QA02_DomTax",
-      "QA03_SharedTax",
-      "QA04_Final")
+    c("QA01_TotAbund", "QA02_DomTax",
+      "QA03_SharedTax", "QA04_Final")
   
   # Convert qa_summary to wide format
   qa_summary <- spread(qa_summary, key = Test, value = Outcome)
@@ -179,8 +161,7 @@ read_excel_data <- function(file_path) {
   
   # Bind replicated sample_details and qa_summary with input_data
   merged_data <- as_tibble(cbind(replicated_sample_details, input_data, replicated_qa_summary))
-  
-  
+    
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
     merged_data = merged_data
