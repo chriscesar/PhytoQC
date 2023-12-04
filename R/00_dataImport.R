@@ -8,7 +8,6 @@ vapply(ld_pkgs, library, logical(1L),
        character.only = TRUE, logical.return = TRUE)
 rm(ld_pkgs)
 
-
 # Set the path to the parent directory containing Excel files
 source("R/00folders.R")
 path_to_files <- fol;rm(fol)
@@ -212,8 +211,3 @@ rm(extracted_data, extracted_data_list,
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
 detach("package:purrr", unload = TRUE)
-
-### TO DO:
-# investigate worksheet errors with lab
-# where do NA values arise? - suspect linked to 'partially duplicated' "WB QA 150 TCO007P Nov 2022.xlsx"
-# check that all files are imported into the data
