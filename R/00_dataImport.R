@@ -83,16 +83,13 @@ read_excel_data <- function(file_path) {
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
        input_data <- readxl::read_excel(
          file_path,
-         sheet = "Input_Data", range = "B6:I238",
-         col_names = FALSE, col_types = "text"
+         sheet = "Input_Data", range = "B6:I238", col_names = FALSE, col_types = "text"
          )
   
   # Assign custom column names to input_data
        colnames(input_data) <- c(
-         "Taxon", "Qualifier",
-         "Original_dens", "Baseplate_dens",
-         "Replicate_dens", "Original_prop",
-         "Baseplate_prop", "Replicate_prop"
+         "Taxon", "Qualifier", "Original_dens", "Baseplate_dens",
+         "Replicate_dens", "Original_prop", "Baseplate_prop", "Replicate_prop"
          )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
@@ -105,23 +102,18 @@ read_excel_data <- function(file_path) {
   # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
        select(
-              Tax_Qual, Original_dens,
-              Baseplate_dens, Replicate_dens,
-              Original_prop, Baseplate_prop,
-              Replicate_prop
+              Tax_Qual, Original_dens, Baseplate_dens, Replicate_dens,
+              Original_prop, Baseplate_prop, Replicate_prop
               ) %>%
     # Remove rows where all count values are NA or zero
     filter(
            !(
-                  is.na(Original_dens) &
-                  is.na(Baseplate_dens) & is.na(Replicate_dens) &
-                  is.na(Original_prop) &
-                  is.na(Baseplate_prop) & is.na(Replicate_prop)
+                  is.na(Original_dens) & is.na(Baseplate_dens) & is.na(Replicate_dens) &
+                  is.na(Original_prop) & is.na(Baseplate_prop) & is.na(Replicate_prop)
                   ) &
            !(
                   Original_dens == 0 & Baseplate_dens == 0 & Replicate_dens == 0 &
-                  Original_prop == 0 &
-                  Baseplate_prop == 0 & Replicate_prop == 0
+                  Original_prop == 0 & Baseplate_prop == 0 & Replicate_prop == 0
                   )
            ) %>%
        ##convert count data to long format
