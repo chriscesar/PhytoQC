@@ -8,7 +8,6 @@ vapply(ld_pkgs, library, logical(1L),
        character.only = TRUE, logical.return = TRUE)
 rm(ld_pkgs)
 
-
 # Set the path to the parent directory containing Excel files
 source("R/00folders.R")
 path_to_files <- fol;rm(fol)
