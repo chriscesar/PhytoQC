@@ -83,7 +83,8 @@ read_excel_data <- function(file_path) {
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
        input_data <- readxl::read_excel(
          file_path,
-         sheet = "Input_Data", range = "B6:I238", col_names = FALSE, col_types = "text"
+         sheet = "Input_Data", range = "B6:I238",
+         col_names = FALSE, col_types = "text"
          )
   
   # Assign custom column names to input_data
@@ -108,12 +109,15 @@ read_excel_data <- function(file_path) {
     # Remove rows where all count values are NA or zero
     filter(
            !(
-                  is.na(Original_dens) & is.na(Baseplate_dens) & is.na(Replicate_dens) &
-                  is.na(Original_prop) & is.na(Baseplate_prop) & is.na(Replicate_prop)
+                  is.na(Original_dens) & is.na(Baseplate_dens) &
+                    is.na(Replicate_dens) & is.na(Original_prop) &
+                    is.na(Baseplate_prop) & is.na(Replicate_prop)
                   ) &
            !(
-                  Original_dens == 0 & Baseplate_dens == 0 & Replicate_dens == 0 &
-                  Original_prop == 0 & Baseplate_prop == 0 & Replicate_prop == 0
+             Original_dens == 0 & Baseplate_dens == 0 &
+               Replicate_dens == 0 &
+               Original_prop == 0 & Baseplate_prop == 0 &
+               Replicate_prop == 0
                   )
            ) %>%
        ##convert count data to long format
@@ -127,7 +131,8 @@ read_excel_data <- function(file_path) {
   
   # Read the "QA_Summary" table from cells A1:B5
        qa_summary <- readxl::read_excel(file_path,
-                                        sheet = "QA_Summary", range = "A1:B5",
+                                        sheet = "QA_Summary",
+                                        range = "A1:B5",
                                         col_names = TRUE)
   
   # Rename specific row values in qa_summary
@@ -139,11 +144,14 @@ read_excel_data <- function(file_path) {
   qa_summary <- spread(qa_summary, key = Test, value = Outcome)
   
   # Replicate sample_details and qa_summary rows to match the number of rows in input_data
-  replicated_sample_details <- sample_details[rep(seq_len(nrow(sample_details)), nrow(input_data)), ]
-  replicated_qa_summary <- qa_summary[rep(seq_len(nrow(qa_summary)), nrow(input_data)), ]
+  replicated_sample_details <- sample_details[rep(seq_len(nrow(sample_details)),
+                                                  nrow(input_data)), ]
+  replicated_qa_summary <- qa_summary[rep(seq_len(nrow(qa_summary)),
+                                          nrow(input_data)), ]
   
   # Bind replicated sample_details and qa_summary with input_data
-  merged_data <- as_tibble(cbind(replicated_sample_details, input_data, replicated_qa_summary))
+  merged_data <- as_tibble(cbind(replicated_sample_details,
+                                 input_data, replicated_qa_summary))
     
   # Return a named list with filename, data frames, and renamed QA_Summary table
   return(
@@ -191,13 +199,8 @@ time.taken
 
 ### tidy up ####
 rm(extracted_data, extracted_data_list,
-   end.time,
-   excel_files,
-   path_to_files,
-   start.time,
-   time.taken,
-   fol,
-   read_excel_data)
+   end.time, excel_files, path_to_files,
+   start.time, time.taken, fol, read_excel_data)
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
