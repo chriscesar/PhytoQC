@@ -25,7 +25,6 @@ excel_files <-
 read_excel_data <- function(file_path) {
   
   ## Extract info from ###-Sample_Details-### worksheet ##
-
   # Read cells A1:B13 from the worksheet "Sample_Details"
   sample_details <- readxl::read_excel(file_path,
                                        sheet = "Sample_Details",
