@@ -10,7 +10,8 @@ rm(ld_pkgs)
 
 
 # Set the path to the parent directory containing Excel files
-path_to_files <- fol
+source("R/00folders.R")
+path_to_files <- fol;rm(fol)
 
 # Get a list of all Excel files in the directory and sub-directories
 excel_files <-
@@ -205,6 +206,7 @@ rm(extracted_data, extracted_data_list,
    path_to_files,
    start.time,
    time.taken,
+   fol,
    read_excel_data)
 
 detach("package:readxl", unload = TRUE)
