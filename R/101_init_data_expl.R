@@ -57,7 +57,7 @@ df0_orig_w <- df0 %>%
 ### create temporary file for ordination
 # remove metadata
 dftmp <- df0_orig_w %>% 
-  select(!c(SD00FileName:AnalysisType))
+  dplyr::select(!c(SD00FileName:AnalysisType))
 set.seed(pi);ord <- vegan::metaMDS(dftmp,
                       try = 20,
                       trymax = 1000,
