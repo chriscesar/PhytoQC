@@ -168,6 +168,7 @@ mean_bin %>%
   dplyr::select(-lab_more) %>% 
   ggplot(.,aes(x=tx, y= Mean, group=Lab, fill=Lab,shape=Lab))+
   scale_shape_manual(values = c(22,24))+
+  scale_fill_manual(values = c("#0072B2","#e79f00"))+
   geom_point(size=4)+
   geom_vline(xintercept = seq(from = .5, to = 20.5, by = 1),
              col= "grey", lty=2)+
