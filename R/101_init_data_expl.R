@@ -163,7 +163,7 @@ View(mean_bin)
 
 ### quick plot
 mean_bin %>% 
-  pivot_longer(cols=APEM:CEFAS,
+  pivot_longer(cols=1:2,
                names_to = "Lab",values_to = "Mean") %>% 
   dplyr::select(-lab_more) %>% 
   ggplot(.,aes(x=tx, y= Mean, group=Lab, fill=Lab,shape=Lab))+
