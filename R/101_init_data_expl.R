@@ -20,11 +20,11 @@ df0 <- as_tibble(read.csv("data/out/extracted_data_NonLabSwap.csv"))
 
 # Widen data and run MDS ####
 
-### filter by AnalysisType = Original & widen
+### filter by AnalysisType = "Original" & widen
 df0_orig_w <- df0 %>% 
   filter(.,!is.na(SD00FileName)) %>% 
   filter(AnalysisType == "Original") %>% 
-  dplyr::select(.,
+  dplyr::select(., # remove unnecessary columns
                 !c(prop,
                    QA01_TotAbund,
                    QA02_DomTax,
@@ -51,7 +51,7 @@ df0_orig_w <- df0 %>%
     Tax_Qual
   ) %>% 
   pivot_wider(names_from = Tax_Qual, values_from = dens,
-              values_fill = 0) %>% 
+              values_fill = 0) %>% # widen data
   ungroup()
 
 ### create temporary file for ordination
@@ -160,6 +160,21 @@ mean_bin$lab_more <- apply(mean_bin, 1, function(row) {
   colnames(mean_bin)[which.max(row)]
   })
 View(mean_bin)
+
+### quick plot
+mean_bin %>% 
+  pivot_longer(cols=APEM:CEFAS,
+               names_to = "Lab",values_to = "Mean") %>% 
+  dplyr::select(-lab_more) %>% 
+  ggplot(.,aes(x=tx, y= Mean, group=Lab, fill=Lab,shape=Lab))+
+  scale_shape_manual(values = c(22,24))+
+  geom_point(size=4)+
+  geom_vline(xintercept = seq(from = .5, to = 20.5, by = 1),
+             col= "grey", lty=2)+
+  theme(axis.text.x = element_blank(),
+        #axis.title.x = element_blank(),
+        axis.title.y = element_blank())+
+  coord_flip()
 
 # to do: ####
 # convert to binary data.  Which taxa are more likely to be found/missed by diff labs?
