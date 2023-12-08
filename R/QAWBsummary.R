@@ -258,3 +258,7 @@ dfall_smp %>%
            SD01_AnaylsisLab
            ) %>% 
   count()
+
+dfall_smp %>% 
+  group_by(SD02_LabSwap,SD01_AnaylsisLab) %>% 
+  count()
