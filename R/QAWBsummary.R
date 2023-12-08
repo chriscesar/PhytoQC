@@ -222,3 +222,38 @@ df %>%
            QA03_SharedTax) %>% 
   count()
 ###
+
+### summarise all data ####
+dfall <- df0
+
+# assign values to correct dates
+dfall %>% 
+  filter(nchar(SD06_SampleDate)==5) -> dfall_tmp_5
+
+dfall_tmp_5$SD06_SampleDate <- as.Date(as.numeric(dfall_tmp_5$SD06_SampleDate),
+                                    origin = "1899-12-30")
+
+dfall %>% 
+  filter(nchar(SD06_SampleDate)!=5) -> dfall_tmp_n5
+
+dfall_tmp_n5$SD06_SampleDate <- as.Date(dfall_tmp_n5$SD06_SampleDate,
+                                     format = "%d/%m/%Y")
+
+### join the data together
+dfall <- rbind(dfall_tmp_n5,dfall_tmp_5); rm(dfall_tmp_n5,dfall_tmp_5)
+
+#remove taxon data
+dfall_smp <- dfall %>% 
+  dplyr::select(.,-c(Tax_Qual,dens,prop,
+                     SD14_WaterSampleVol_ml,
+                     SD15_SubSampleVol_ml,
+                     AnalysisType)) %>% 
+  distinct()
+
+## append year
+
+dfall_smp %>% 
+  group_by(year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab,
+           SD02_LabSwap) %>% 
+  count()
