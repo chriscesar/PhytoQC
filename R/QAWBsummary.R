@@ -253,7 +253,8 @@ dfall_smp <- dfall %>%
 ## append year
 
 dfall_smp %>% 
-  group_by(year = format(SD06_SampleDate, "%Y"),
-           SD01_AnaylsisLab,
-           SD02_LabSwap) %>% 
+  group_by(SD02_LabSwap,
+           year = format(SD06_SampleDate, "%Y"),
+           SD01_AnaylsisLab
+           ) %>% 
   count()
