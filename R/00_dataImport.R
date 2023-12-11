@@ -99,8 +99,25 @@ read_excel_data <- function(file_path) {
          paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
          input_data$Taxon
          )
-  
-  # Remove "Taxon" and "Qualifier" variables
+       
+       # Remove parentheses from Tax_Qual
+       input_data$Tax_Qual <- gsub("[()]", "", input_data$Tax_Qual)
+       
+       # Replace "greater than or equal to" and "less than or equal to" symbols
+       input_data$Tax_Qual <- gsub("≥", ">", input_data$Tax_Qual)
+       input_data$Tax_Qual <- gsub("≤", "<", input_data$Tax_Qual)
+       
+       # Replace "µ" with  "u"
+       input_data$Tax_Qual <- gsub("µ", "u", input_data$Tax_Qual)
+       
+       # Replace "double space" with  "single space"
+       input_data$Tax_Qual <- gsub("  ", " ", input_data$Tax_Qual)
+
+       # Fix capitals for "Pseudo-Nitzschia"
+       input_data$Tax_Qual <- gsub("Pseudo-Nitzschia", "Pseudo-nitzschia",
+                                   input_data$Tax_Qual)
+
+       # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
        select(
               Tax_Qual, Original_dens, Baseplate_dens, Replicate_dens,
