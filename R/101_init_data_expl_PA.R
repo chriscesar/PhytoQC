@@ -135,6 +135,16 @@ text3d(
   col = "grey"
 )
 
+text3d(
+  x = scores_species$NMDS1,
+  y = scores_species$NMDS2,
+  z = scores_species$NMDS3,
+  scores_species$lb2,#'SIG' taxa only
+  size = 1,
+  cex = .75,
+  col = "red"
+)
+
 axes3d()
 title3d(
   xlab = "NMDS1",
@@ -142,8 +152,6 @@ title3d(
   zlab = "NMDS3",
   font = 2
 )
-
-
 
 # statistical comparisons ####
 ### do assemblages differ by lab?
