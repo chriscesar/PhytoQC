@@ -69,11 +69,72 @@ ord <- vegan::metaMDS(dftmp,
                       trymax = 1000,
                       k = 3)
 #plot(ord)
-                        
-## extract data for ggplot2 ####
-#### extract ordination axes ####
+
+# statistical comparisons ####
+### do assemblages differ by lab?
+## vegan version
+(fit01 <-
+   vegan::adonis2(dftmp ~ df0_orig_w$SD01_AnaylsisLab,
+                  permutations = perms))
+
+## mvabund
+mvdftmp <- mvabund(dftmp)
+fit02 <-
+  manyglm(mvdftmp ~ df0_orig_w$SD01_AnaylsisLab)
+# anova_fit02 <- mvabund::anova.manyglm(fit02,p.uni = "adjusted")
+
+### mvabund based on presence/absence data
+dftmp_bin <- dftmp
+# summary(fit03 <- manyglm(mvdftmp~df0_orig_w$SD01_AnaylsisLab,
+#                  family="binomial"))
+# anova_fit03 <- mvabund::anova.manyglm(fit03,
+#                                       p.uni = "adjusted")
+# saveRDS(anova_fit03, file = "data/out/anova_fit03_binomial_PA.Rdat")
+anova_fit03 <- readRDS("data/out/anova_fit03_binomial_PA.Rdat")
+
+### extract scores
+scores_species <-
+  as.data.frame(scores(ord, display = "species"))
+
 scores_site <- df0_orig_w %>%
   dplyr::select(c(1:17))
+
+# which taxa differ?
+tx <- as_tibble(t(anova_fit03$uni.p))
+tx$nm <- rownames(scores_species)
+tx <- tx[, -1]
+txsig <- tx[tx$`df0_orig_w$SD01_AnaylsisLab` < 0.06, ]
+
+# what proportion significantly differ?
+nrow(txsig) / nrow(tx) * 100
+
+### prevalence of these by lab
+dftmp_bin$Lab <- df0_orig_w$SD01_AnaylsisLab
+dftmp_bin %>%
+  group_by(Lab) %>%
+  summarise(across(
+    `Cerataulina pelagica`:`Indet. naked dinoflagellate_>50`,
+    mean,
+    na.rm = TRUE
+  )) %>%
+  t(.) -> mean_bin
+
+mean_bin <- as_tibble(mean_bin)
+mean_bin <- mean_bin[-1, ]
+colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnaylsisLab)[2],
+                        unique(df0_orig_w$SD01_AnaylsisLab)[1])
+mean_bin$tx <- tx$nm
+
+### retain only 'significant' taxa
+(mean_bin <- mean_bin[mean_bin$tx %in% txsig$nm, ])
+
+mean_bin$lab_more <- apply(mean_bin, 1, function(row) {
+  colnames(mean_bin)[which.max(row)]
+})
+View(mean_bin)
+
+# extract data for ggplot2 ####
+#### extract ordination axes ####
 tmp_sites <- as_tibble(as.data.frame(scores(ord, display = "site")))  #Using the scores function from vegan to extract the site scores and convert to a data.frame
 scores_site$NMDS1 <- tmp_sites$NMDS1 #location of individual samples in NMDS space
 scores_site$NMDS2 <- tmp_sites$NMDS2 #location of individual samples in NMDS space
@@ -91,8 +152,7 @@ rm(tmp_sites)
 
 # Using the scores function from vegan to extract the species scores and
 # convert to a data.frame
-scores_species <-
-  as.data.frame(scores(ord, display = "species"))
+
 scores_species$lbfull <-
   row.names(scores_species)
 scores_species$lb <-
@@ -101,14 +161,14 @@ scores_species$lb <-
   gsub("µ", "u", scores_species$lb)
 
 ### include only tx in 'significant' list (run later code first!)
-# scores_species$lb2 <- ifelse(scores_species$lbfull %in% txsig$nm,
-#                              scores_species$lbfull, " ")
-# scores_species$lb2 <-
-#   gsub("µ", "u", scores_species$lb2)
-# scores_species$lb2 <-
-#   gsub("≤", "<", scores_species$lb2)
-# scores_species$lb2 <-
-#   gsub("≥", ">", scores_species$lb2)
+scores_species$lb2 <- ifelse(scores_species$lbfull %in% txsig$nm,
+                             scores_species$lbfull, " ")
+scores_species$lb2 <-
+  gsub("µ", "u", scores_species$lb2)
+scores_species$lb2 <-
+  gsub("≤", "<", scores_species$lb2)
+scores_species$lb2 <-
+  gsub("≥", ">", scores_species$lb2)
 
 saveRDS(scores_species, file = "data/out/scores_species3d_PA.Rdata")
 
@@ -153,62 +213,6 @@ title3d(
   font = 2
 )
 
-# statistical comparisons ####
-### do assemblages differ by lab?
-## vegan version
-(fit01 <-
-   vegan::adonis2(dftmp ~ df0_orig_w$SD01_AnaylsisLab,
-                  permutations = perms))
-
-## mvabund
-mvdftmp <- mvabund(dftmp)
-fit02 <-
-  manyglm(mvdftmp ~ df0_orig_w$SD01_AnaylsisLab)
-# anova_fit02 <- mvabund::anova.manyglm(fit02,p.uni = "adjusted")
-
-### mvabund based on presence/absence data
-dftmp_bin <- dftmp
-# summary(fit03 <- manyglm(mvdftmp~df0_orig_w$SD01_AnaylsisLab,
-#                  family="binomial"))
-# anova_fit03 <- mvabund::anova.manyglm(fit03,
-#                                       p.uni = "adjusted")
-# saveRDS(anova_fit03, file = "data/out/anova_fit03_binomial_PA.Rdat")
-anova_fit03 <- readRDS("data/out/anova_fit03_binomial_PA.Rdat")
-
-# which taxa differ?
-tx <- as_tibble(t(anova_fit03$uni.p))
-tx$nm <- rownames(scores_species)
-tx <- tx[, -1]
-txsig <- tx[tx$`df0_orig_w$SD01_AnaylsisLab` < 0.06, ]
-
-# what proportion significantly differ?
-nrow(txsig) / nrow(tx) * 100
-                        
-### prevalence of these by lab
-dftmp_bin$Lab <- df0_orig_w$SD01_AnaylsisLab
-dftmp_bin %>%
-  group_by(Lab) %>%
-  summarise(across(
-    `Cerataulina pelagica`:`Indet. naked dinoflagellate_>50`,
-    mean,
-    na.rm = TRUE
-  )) %>%
-  t(.) -> mean_bin
-
-mean_bin <- as_tibble(mean_bin)
-mean_bin <- mean_bin[-1, ]
-colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnaylsisLab)[2],
-                        unique(df0_orig_w$SD01_AnaylsisLab)[1])
-mean_bin$tx <- tx$nm
-
-### retain only 'significant' taxa
-(mean_bin <- mean_bin[mean_bin$tx %in% txsig$nm, ])
-
-mean_bin$lab_more <- apply(mean_bin, 1, function(row) {
-    colnames(mean_bin)[which.max(row)]
-  })
-View(mean_bin)
-
 ### quick plot
 mean_bin %>%
   pivot_longer(cols = 1:2,
@@ -241,6 +245,3 @@ mean_bin %>%
     axis.title.y = element_blank()
         ) +
   coord_flip()
-
-# to do: ####
-# convert to binary data.  Which taxa are more likely to be found/missed by diff labs?
