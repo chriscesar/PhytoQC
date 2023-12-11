@@ -82,11 +82,12 @@ mvdftmp <- mvabund(dftmp)
 fit02 <-
   manyglm(mvdftmp ~ df0_orig_w$SD01_AnaylsisLab)
 # anova_fit02 <- mvabund::anova.manyglm(fit02,p.uni = "adjusted")
+# saveRDS(anova_fit02, file = "data/out/anova_fit02_PA.Rdat")
 
 ### mvabund based on presence/absence data
 dftmp_bin <- dftmp
-# summary(fit03 <- manyglm(mvdftmp~df0_orig_w$SD01_AnaylsisLab,
-#                  family="binomial"))
+summary(fit03 <- manyglm(mvdftmp~df0_orig_w$SD01_AnaylsisLab,
+                 family="binomial"))
 # anova_fit03 <- mvabund::anova.manyglm(fit03,
 #                                       p.uni = "adjusted")
 # saveRDS(anova_fit03, file = "data/out/anova_fit03_binomial_PA.Rdat")
@@ -218,6 +219,10 @@ mean_bin %>%
   pivot_longer(cols = 1:2,
                names_to = "Lab",
                values_to = "Mean") %>%
+  group_by(tx) %>% 
+  mutate(Max = max(Mean),
+         Min = min(Mean)) %>% 
+  ungroup() %>% 
   mutate(Mean = as.numeric(Mean)) %>% 
   dplyr::select(-lab_more) %>%
   arrange(desc(Mean),Lab) %>% 
