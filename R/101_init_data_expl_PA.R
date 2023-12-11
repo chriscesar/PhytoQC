@@ -201,8 +201,8 @@ text3d(
   y = scores_species$NMDS2,
   z = scores_species$NMDS3,
   scores_species$lb2,#'SIG' taxa only
-  size = 1,
-  cex = .75,
+  size = 12,
+  cex = .9,
   col = "red"
 )
 
