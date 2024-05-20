@@ -3,11 +3,12 @@
 
 # admin ####
 # load packages #
-ld_pkgs <- c("tidyverse","purrr","readxl")
+ld_pkgs <- c("tidyverse","purrr","readxl", "tictoc")
 vapply(ld_pkgs, library, logical(1L),
        character.only = TRUE, logical.return = TRUE)
 rm(ld_pkgs)
 
+tictoc::tic.clearlog();tic("ADMIN: Set metadata/list of files")
 # Set the path to the parent directory containing Excel files
 source("R/00folders.R")
 path_to_files <- fol;rm(fol)
@@ -50,6 +51,10 @@ read_excel_data <- function(file_path) {
     col_names = FALSE, col_types = "text"
     )
   
+  # Handle potentially missing values (by checking length)
+  water_sample_vol <- ifelse(length(water_sample_vol) > 0, as.character(water_sample_vol[[1]]), NA)
+  sub_sample_vol <- ifelse(length(sub_sample_vol) > 0, as.character(sub_sample_vol[[1]]), NA)
+  
   # Add rows for WaterSampleVol_ml and SubSampleVol_ml to sample_details
   sample_details <- rbind(
     sample_details,
@@ -81,76 +86,77 @@ read_excel_data <- function(file_path) {
   ## Extract info from ###-Input_Data-### worksheet ##
   
   # Read cells B6:I238 from the worksheet "Input_Data" as character values
-       input_data <- readxl::read_excel(
-         file_path,
-         sheet = "Input_Data", range = "B6:I238",
-         col_names = FALSE, col_types = "text"
-         )
+  input_data <- readxl::read_excel(
+    file_path,
+    sheet = "Input_Data", range = "B6:I238",
+    col_names = FALSE, col_types = "text"
+    )
   
   # Assign custom column names to input_data
-       colnames(input_data) <- c(
-         "Taxon", "Qualifier", "Original_dens", "Baseplate_dens",
-         "Replicate_dens", "Original_prop", "Baseplate_prop", "Replicate_prop"
-         )
+  colnames(input_data) <- c(
+    "Taxon", "Qualifier", "Original_dens", "Baseplate_dens",
+    "Replicate_dens", "Original_prop", "Baseplate_prop", "Replicate_prop"
+    )
   
   # Concatenate "Taxon" and "Qualifier" into a new variable "Tax_Qual"
-       input_data$Tax_Qual <- ifelse(
-         !is.na(input_data$Qualifier),
-         paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
-         input_data$Taxon
-         )
-       
-       # Remove parentheses from Tax_Qual
-       input_data$Tax_Qual <- gsub("[()]", "", input_data$Tax_Qual)
-       
-       # Replace "greater than or equal to" and "less than or equal to" symbols
-       input_data$Tax_Qual <- gsub("≥", ">", input_data$Tax_Qual)
-       input_data$Tax_Qual <- gsub("≤", "<", input_data$Tax_Qual)
-       
-       # Replace "µ" with  "u"
-       input_data$Tax_Qual <- gsub("µ", "u", input_data$Tax_Qual)
-       
-       # Replace "double space" with  "single space"
-       input_data$Tax_Qual <- gsub("  ", " ", input_data$Tax_Qual)
-
-       # Fix capitals for "Pseudo-Nitzschia"
-       input_data$Tax_Qual <- gsub("Pseudo-Nitzschia", "Pseudo-nitzschia",
-                                   input_data$Tax_Qual)
-
-       # Remove "Taxon" and "Qualifier" variables
+  input_data$Tax_Qual <- ifelse(
+    !is.na(input_data$Qualifier),
+    paste(input_data$Taxon, input_data$Qualifier, sep = "_"),
+    input_data$Taxon
+    )
+    
+  
+  # Remove parentheses from Tax_Qual
+  input_data$Tax_Qual <- gsub("[()]", "", input_data$Tax_Qual)
+  
+  # Replace "greater than or equal to" and "less than or equal to" symbols
+  input_data$Tax_Qual <- gsub("≥", ">", input_data$Tax_Qual)
+  input_data$Tax_Qual <- gsub("≤", "<", input_data$Tax_Qual)
+  
+  # Replace "µ" with  "u"
+  input_data$Tax_Qual <- gsub("µ", "u", input_data$Tax_Qual)
+  
+  # Replace "double space" with  "single space"
+  input_data$Tax_Qual <- gsub("  ", " ", input_data$Tax_Qual)
+  
+  # Fix capitals for "Pseudo-Nitzschia"
+  input_data$Tax_Qual <- gsub("Pseudo-Nitzschia", "Pseudo-nitzschia",
+                              input_data$Tax_Qual)
+  
+  # Remove "Taxon" and "Qualifier" variables
   input_data <- input_data %>%
        select(
-              Tax_Qual, Original_dens, Baseplate_dens, Replicate_dens,
-              Original_prop, Baseplate_prop, Replicate_prop
-              ) %>%
+         Tax_Qual, Original_dens, Baseplate_dens, Replicate_dens,
+         Original_prop, Baseplate_prop, Replicate_prop
+         ) %>%
     # Remove rows where all count values are NA or zero
     filter(
-           !(
-                  is.na(Original_dens) & is.na(Baseplate_dens) &
-                    is.na(Replicate_dens) & is.na(Original_prop) &
-                    is.na(Baseplate_prop) & is.na(Replicate_prop)
-                  ) &
-           !(
-             Original_dens == 0 & Baseplate_dens == 0 &
-               Replicate_dens == 0 &
-               Original_prop == 0 & Baseplate_prop == 0 &
-               Replicate_prop == 0
-                  )
-           ) %>%
-       ##convert count data to long format
-       pivot_longer(-Tax_Qual,
-                    names_to = c("AnalysisType", ".value"),
-                    names_sep = "_") %>%
-       #remove NA or 0 values
-       filter(!(is.na(dens)) & !(dens == 0))
+      !(
+        is.na(Original_dens) & is.na(Baseplate_dens) &
+          is.na(Replicate_dens) & is.na(Original_prop) &
+          is.na(Baseplate_prop) & is.na(Replicate_prop)
+        ) &
+        !(
+          Original_dens == 0 & Baseplate_dens == 0 &
+            Replicate_dens == 0 &
+            Original_prop == 0 & Baseplate_prop == 0 &
+            Replicate_prop == 0
+          )
+      ) %>%
+    ##convert count data to long format
+    pivot_longer(-Tax_Qual,
+                 names_to = c("AnalysisType", ".value"),
+                 names_sep = "_") %>%
+    #remove NA or 0 values
+    filter(!(is.na(dens)) & !(dens == 0))
   
   ## Extract info from ###-QA_Summary-### worksheet ##
   
   # Read the "QA_Summary" table from cells A1:B5
-       qa_summary <- readxl::read_excel(file_path,
-                                        sheet = "QA_Summary",
-                                        range = "A1:B5",
-                                        col_names = TRUE)
+  qa_summary <- readxl::read_excel(file_path,
+                                   sheet = "QA_Summary",
+                                   range = "A1:B5",
+                                   col_names = TRUE)
   
   # Rename specific row values in qa_summary
   qa_summary[, 1] <-
@@ -175,15 +181,19 @@ read_excel_data <- function(file_path) {
     merged_data = merged_data
   )
   }
+toc(log=TRUE)
 
+tic("Import data: run function to import data")
 # Use purrr::map() to apply the modified function to all files and read the data
-start.time <- Sys.time() # start timer
 
 # extract data as a list
 extracted_data_list <- purrr::map(excel_files, read_excel_data)
+toc(log=TRUE)
 
+tic("Write data to files")
 # Combine list elements into a single data frame using dplyr::bind_rows()
 extracted_data <- dplyr::bind_rows(extracted_data_list)
+toc(log=TRUE)
 
 ### save data
 ## all data
@@ -210,9 +220,8 @@ write.csv(extracted_dataNLS,
           row.names = FALSE)
 rm(extracted_dataNLS)
 
-end.time <- Sys.time() #stop timer
-time.taken <- round(end.time - start.time,2)
-time.taken
+toc(log = TRUE)
+unlist(tictoc::tic.log())
 
 ### tidy up ####
 rm(extracted_data, extracted_data_list,
@@ -221,4 +230,5 @@ rm(extracted_data, extracted_data_list,
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
+detach("package:tictoc", unload = TRUE)
 detach("package:purrr", unload = TRUE)
