@@ -30,6 +30,7 @@ file_names <- basename(excel_files)
 
 # Create a logical vector indicating which files do not contain "audit"
 non_audit_files <- !grepl("audit", file_names, ignore.case = TRUE)
+rm(file_names)
 
 # Filter the original vector to exclude "audit" files
 excel_files <- excel_files[non_audit_files]
@@ -52,6 +53,7 @@ for (file in excel_files) {
     file.copy(file, "data_raw")
   }
 }
+rm(file_name)
 
 # Get a list of all Excel files in the local data folder
 excel_files_local <-
@@ -123,7 +125,7 @@ read_excel_data <- function(file_path) {
   file_name <- basename(file_path)
   
   # Add the file_name to the sample_details data frame
-  sample_details <- cbind("SD00FileName" = file_name, sample_details)
+  sample_details <- cbind("SD00_FileName" = file_name, sample_details)
   
   ## Extract info from ###-Input_Data-### worksheet ##
   
@@ -256,7 +258,7 @@ rm(extracted_dataLS)
 ## Non-Lab Swap
 extracted_dataNLS <- extracted_data %>% 
   dplyr::filter(.,SD02_LabSwap == "No") %>% 
-  dplyr::filter(., !is.na(SD00FileName))
+  dplyr::filter(., !is.na(SD00_FileName))
 
 write.csv(extracted_dataNLS,
           file = "data_processed/extracted_data_NonLabSwap.csv",
@@ -270,7 +272,9 @@ saveRDS(x,file = "dataImportLog.rdat")
 ### tidy up ####
 rm(extracted_data, extracted_data_list,
    excel_files, path_to_files,
-   read_excel_data,)
+   read_excel_data,
+   excel_files_local,
+   existing_filenames, existing_files, file)
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
