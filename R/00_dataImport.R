@@ -235,10 +235,13 @@ tic("Import data: run function to import data")
 extracted_data_list <- purrr::map(excel_files_local, read_excel_data)#from local folder
 toc(log=TRUE)
 
-tic("Write data to files")
+tic("Convert data to df")
 # Combine list elements into a single data frame using dplyr::bind_rows()
 extracted_data <- dplyr::bind_rows(extracted_data_list)
 toc(log=TRUE)
+
+### MAKE LAB NAMES CONSISTENT
+extracted_data$SD01_AnaylsisLab <- stringr::str_to_upper(extracted_data$SD01_AnaylsisLab)
 
 ### save data
 ## all data
@@ -274,7 +277,7 @@ rm(extracted_data, extracted_data_list,
    excel_files, path_to_files,
    read_excel_data,
    excel_files_local,
-   existing_filenames, existing_files, file)
+   existing_filenames, existing_files, file,x)
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
