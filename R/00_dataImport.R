@@ -8,7 +8,9 @@ vapply(ld_pkgs, library, logical(1L),
        character.only = TRUE, logical.return = TRUE)
 rm(ld_pkgs)
 
-tictoc::tic.clearlog();tic("ADMIN: Set metadata/list of files")
+tictoc::tic.clearlog();tic("TOTAL TIME")
+tic("ADMIN: Set metadata; copy files to local folder")
+
 # Set the path to the parent directory containing Excel files
 source("R/00folders.R")
 path_to_files <- fol;rm(fol)
@@ -21,6 +23,46 @@ excel_files <-
     full.names = TRUE, #returns full filepath
     recursive = TRUE # look in subfolders
   )
+
+# Remove files that contain the string "audit" in their filename
+# First, extract the file names from the full paths
+file_names <- basename(excel_files)
+
+# Create a logical vector indicating which files do not contain "audit"
+non_audit_files <- !grepl("audit", file_names, ignore.case = TRUE)
+
+# Filter the original vector to exclude "audit" files
+excel_files <- excel_files[non_audit_files]
+rm(non_audit_files)
+
+# Get a list of all files already present in the destination folder
+existing_files <- list.files(
+  "data_raw",
+  pattern = ".xls$|.xlsx$", # files ending in Excel file types
+  full.names = TRUE # returns full filepath
+)
+
+# Extract only the file names from the full paths
+existing_filenames <- basename(existing_files)
+
+# Copy each file to the destination folder if it is not already present
+for (file in excel_files) {
+  file_name <- basename(file)
+  if (!(file_name %in% existing_filenames)) {
+    file.copy(file, "data_raw")
+  }
+}
+
+# Get a list of all Excel files in the local data folder
+excel_files_local <-
+  list.files(
+    "data_raw",
+    pattern = ".xls$|.xlsx$", #files ending in Excel file types
+    full.names = TRUE, #returns full filepath
+    recursive = TRUE # look in subfolders
+  )
+
+##################################################
 
 # Function to read specific cells from a workbook and associate with filename
 read_excel_data <- function(file_path) {
@@ -187,7 +229,8 @@ tic("Import data: run function to import data")
 # Use purrr::map() to apply the modified function to all files and read the data
 
 # extract data as a list
-extracted_data_list <- purrr::map(excel_files, read_excel_data)
+# extracted_data_list <- purrr::map(excel_files, read_excel_data)#from network folder
+extracted_data_list <- purrr::map(excel_files_local, read_excel_data)#from local folder
 toc(log=TRUE)
 
 tic("Write data to files")
@@ -198,7 +241,7 @@ toc(log=TRUE)
 ### save data
 ## all data
 write.csv(extracted_data,
-          file = "data/out/extracted_data_ALL.csv",
+          file = "data_processed/extracted_data_ALL.csv",
           row.names = FALSE)
 
 ## Lab Swap
@@ -206,7 +249,7 @@ extracted_dataLS <- extracted_data %>%
   dplyr::filter(.,SD02_LabSwap == "Yes")
 
 write.csv(extracted_dataLS,
-          file = "data/out/extracted_data_LabSwap.csv",
+          file = "data_processed/extracted_data_LabSwap.csv",
           row.names = FALSE)
 rm(extracted_dataLS)
 
@@ -216,17 +259,18 @@ extracted_dataNLS <- extracted_data %>%
   dplyr::filter(., !is.na(SD00FileName))
 
 write.csv(extracted_dataNLS,
-          file = "data/out/extracted_data_NonLabSwap.csv",
+          file = "data_processed/extracted_data_NonLabSwap.csv",
           row.names = FALSE)
 rm(extracted_dataNLS)
 
 toc(log = TRUE)
-unlist(tictoc::tic.log())
+(x <- unlist(tictoc::tic.log()))
+saveRDS(x,file = "dataImportLog.rdat")
 
 ### tidy up ####
 rm(extracted_data, extracted_data_list,
-   end.time, excel_files, path_to_files,
-   start.time, time.taken, fol, read_excel_data)
+   excel_files, path_to_files,
+   read_excel_data,)
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
