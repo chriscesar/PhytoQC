@@ -28,7 +28,7 @@ df0_orig_w <- df0 %>%
                    QA04_Final)) %>% 
   dplyr::group_by(
     SD00_FileName,
-    SD01_AnaylsisLab,
+    SD01_AnalysisLab,
     SD02_LabSwap,
     SD03_OriginalAnalyst,
     SD04_AnalysisDateOrig,
@@ -76,9 +76,9 @@ scores_site$NMDS1 <- tmp_sites$NMDS1 #location of individual samples in NMDS spa
 scores_site$NMDS2 <- tmp_sites$NMDS2 #location of individual samples in NMDS space
 scores_site$NMDS3 <- tmp_sites$NMDS3 #location of individual samples in NMDS space
 #assign colours to variable 'SD01_AnalysisLab'
-unq <- levels(as.factor(scores_site$SD01_AnaylsisLab)) ## extract unique Lab values
-scores_site$LabCol <- case_when(scores_site$SD01_AnaylsisLab == unq[1] ~ cbPalette[1],
-                                scores_site$SD01_AnaylsisLab == unq[2] ~ cbPalette[2],
+unq <- levels(as.factor(scores_site$SD01_AnalysisLab)) ## extract unique Lab values
+scores_site$LabCol <- case_when(scores_site$SD01_AnalysisLab == unq[1] ~ cbPalette[1],
+                                scores_site$SD01_AnalysisLab == unq[2] ~ cbPalette[2],
                                    TRUE ~ NA_character_)
 saveRDS(scores_site, file = "data_processed/scores_site3d.Rdata")
 rm(tmp_sites)
@@ -115,20 +115,30 @@ toc(log=TRUE)
 ### do assemblages differ by lab?
 ## vegan version
 tic("Run 1 way PERMANOVA")
-(fit01 <- vegan::adonis2(dftmp ~ df0_orig_w$SD01_AnaylsisLab,
+(fit01 <- vegan::adonis2(dftmp ~ df0_orig_w$SD01_AnalysisLab,
                          permutations = perms))
 toc(log=TRUE)
 
 ## mvabund
 tic("Run mvabund model: raw counts")
-mvdftmp <- mvabund(dftmp)
-fit_raw <- manyglm(mvdftmp ~ df0_orig_w$SD01_AnaylsisLab,family="negative.binomial")
+# mvdftmp <- mvabund(dftmp)
+# fit_raw <- manyglm(mvdftmp ~ df0_orig_w$SD01_AnalysisLab,family="negative.binomial")
+fit_raw <- dftmp %>% mutate(across(everything(),as.integer)) %>% 
+  mvabund::manyglm(mvabund(.)~ df0_orig_w$SD01_AnalysisLab,
+                   family="negative.binomial")
 anova_fit_raw <- mvabund::anova.manyglm(fit_raw,p.uni = "adjusted")
+saveRDS(fit_raw, file = "model_outputs/fit_raw_model.Rdat")
+saveRDS(anova_fit_raw, file = "model_outputs/fit_raw_model_anova.Rdat")
 toc(log=TRUE)
 
 tic("Run mvabund model: sqrt transformed")
-fit_sqrt <- manyglm(sqrt(mvdftmp) ~ df0_orig_w$SD01_AnaylsisLab,family="negative.binomial")
+# fit_sqrt <- manyglm(sqrt(mvdftmp) ~ df0_orig_w$SD01_AnalysisLab,family="negative.binomial")
+fit_sqrt <- dftmp %>% mutate((across(everything(),as.integer)) %>% 
+                               mvabund::manyglm(mvabund(.)~ df0_orig_w$SD01_AnalysisLab,
+                                                family="negative.binomial"))
 anova_fit_sqrt <- mvabund::anova.manyglm(fit_sqrt,p.uni = "adjusted")
+saveRDS(fit_sqrt, file = "model_outputs/fit_sqrt_model.Rdat")
+saveRDS(anova_fit_sqrt, file = "model_outputs/fit_sqrt_model_anova.Rdat")
 toc(log=TRUE)
 
 ### mvabund based on presence/absence data
@@ -136,17 +146,11 @@ tic("Run mvabund model: binary")
 dftmp_bin <- dftmp
 dftmp_bin[dftmp_bin>0] = 1
 mvdftmp_bin <- mvabund(dftmp_bin)
-fit_bin <- manyglm(mvdftmp_bin ~ df0_orig_w$SD01_AnaylsisLab, family=binomial())
+fit_bin <- manyglm(mvdftmp_bin ~ df0_orig_w$SD01_AnalysisLab, family=binomial())
 anova_fit_bin <- mvabund::anova.manyglm(fit_bin,p.uni = "adjusted")
-toc(log=TRUE)
-
-## save outputs
-saveRDS(fit_raw, file = "model_outputs/fit_raw_model.Rdat")
-saveRDS(anova_fit_raw, file = "model_outputs/fit_raw_model_anova.Rdat")
-saveRDS(fit_sqrt, file = "model_outputs/fit_sqrt_model.Rdat")
-saveRDS(anova_fit_sqrt, file = "model_outputs/fit_sqrt_model_anova.Rdat")
 saveRDS(fit_bin, file = "model_outputs/fit_bin_model.Rdat")
 saveRDS(anova_fit_bin, file = "model_outputs/fit_bin_model_anova.Rdat")
+toc(log=TRUE)
 
 (x <- unlist(tictoc::tic.log()))
 saveRDS(x,file = "model_outputs/model_times.Rdat")
@@ -154,7 +158,7 @@ saveRDS(x,file = "model_outputs/model_times.Rdat")
 ########################################
 ########################################
 
-# summary(fit03 <- manyglm(mvdftmp_bin~df0_orig_w$SD01_AnaylsisLab,
+# summary(fit03 <- manyglm(mvdftmp_bin~df0_orig_w$SD01_AnalysisLab,
 #                  family="binomial"))
 # anova_fit03 <- mvabund::anova.manyglm(fit03,
 #                                       p.uni = "adjusted")
@@ -165,13 +169,13 @@ anova_fit03 <- readRDS("data/out/anova_fit03_binomial.Rdat")
 tx <- as_tibble(t(anova_fit03$uni.p))
 tx$nm <- colnames(anova_fit03$uni.p)
 tx <- tx[,-1]
-txsig <- tx[tx$`df0_orig_w$SD01_AnaylsisLab`<0.06,]
+txsig <- tx[tx$`df0_orig_w$SD01_AnalysisLab`<0.06,]
 
 # what proportion significantly differ?
 nrow(txsig)/nrow(tx)*100
 
 ### prevalence of these by lab
-dftmp_bin$Lab <- df0_orig_w$SD01_AnaylsisLab
+dftmp_bin$Lab <- df0_orig_w$SD01_AnalysisLab
 dftmp_bin %>% 
   group_by(Lab) %>% 
   summarise(across(`Cerataulina pelagica`:`Indet. naked dinoflagellate_>50`,
@@ -180,8 +184,8 @@ dftmp_bin %>%
 
 mean_bin <- as_tibble(mean_bin)
 mean_bin <- mean_bin[-1,]
-colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnaylsisLab)[2],
-                        unique(df0_orig_w$SD01_AnaylsisLab)[1])
+colnames(mean_bin) <- c(unique(df0_orig_w$SD01_AnalysisLab)[2],
+                        unique(df0_orig_w$SD01_AnalysisLab)[1])
 mean_bin$tx <- tx$nm
 
 ### retain only 'significant' taxa
