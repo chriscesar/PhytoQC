@@ -51,7 +51,7 @@ for (file in excel_files) {
   file_name <- basename(file)
   if (!(file_name %in% existing_filenames)) {
     file.copy(file, "data_raw")
-  }
+  };flush.console()
 }
 rm(file_name)
 
@@ -108,7 +108,7 @@ read_excel_data <- function(file_path) {
   
   # Rename rows to maintain correct order
   sample_details[, 1] <- c(
-         "SD01_AnaylsisLab", "SD02_LabSwap", "SD03_OriginalAnalyst",
+         "SD01_AnalysisLab", "SD02_LabSwap", "SD03_OriginalAnalyst",
          "SD04_AnalysisDateOrig", "SD05_NameOfSurvey_WFD",
          "SD06_SampleDate", "SD07_EAOldSiteCode",
          "SD08_EAWIMSCode", "SD09_InternalSampleID",
@@ -224,6 +224,7 @@ read_excel_data <- function(file_path) {
   return(
     merged_data = merged_data
   )
+  flush.console()
   }
 toc(log=TRUE)
 
@@ -241,7 +242,7 @@ extracted_data <- dplyr::bind_rows(extracted_data_list)
 toc(log=TRUE)
 
 ### MAKE LAB NAMES CONSISTENT
-extracted_data$SD01_AnaylsisLab <- stringr::str_to_upper(extracted_data$SD01_AnaylsisLab)
+extracted_data$SD01_AnalysisLab <- stringr::str_to_upper(extracted_data$SD01_AnalysisLab)
 
 ### save data
 ## all data
