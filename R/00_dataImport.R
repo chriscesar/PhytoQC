@@ -18,11 +18,18 @@ path_to_files <- fol;rm(fol)
 # Get a list of all Excel files in the directory and sub-directories
 excel_files <-
   list.files(
-    path_to_files,
-    pattern = ".xls$|.xlsx$", #files ending in Excel file types
-    full.names = TRUE, #returns full filepath
-    recursive = TRUE # look in subfolders
+    path = path_to_files,
+    pattern = ".xls$|.xlsx$", # Files ending in Excel file types
+    full.names = TRUE, # Returns full file paths
+    recursive = TRUE # Look in subfolders
   )
+
+# Normalize paths to ensure consistent separators
+normalized_top_level <- normalizePath(path_to_files, winslash = "/")
+normalized_file_dirs <- normalizePath(dirname(excel_files), winslash = "/")
+
+# Filter out files in the top-level directory
+excel_files <- excel_files[normalized_file_dirs != normalized_top_level]
 
 # Remove files that contain the string "audit" in their filename
 # First, extract the file names from the full paths
@@ -278,7 +285,9 @@ rm(extracted_data, extracted_data_list,
    excel_files, path_to_files,
    read_excel_data,
    excel_files_local,
-   existing_filenames, existing_files, file,x)
+   existing_filenames, existing_files, file,x,
+   normalized_file_dirs,
+   normalized_top_level)
 
 detach("package:readxl", unload = TRUE)
 detach("package:tidyverse", unload = TRUE)
