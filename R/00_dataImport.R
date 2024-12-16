@@ -251,6 +251,18 @@ toc(log=TRUE)
 ### MAKE LAB NAMES CONSISTENT
 extracted_data$SD01_AnalysisLab <- stringr::str_to_upper(extracted_data$SD01_AnalysisLab)
 
+### set variable classes
+extracted_data %>% 
+  mutate(.,
+         SD04_AnalysisDateOrig = as.numeric(SD04_AnalysisDateOrig),
+         SD11_AuditDateBaseRec = as.numeric(SD11_AuditDateBaseRec),
+         SD12_AuditDateRepSub = as.numeric(SD12_AuditDateRepSub),
+         SD14_WaterSampleVol_ml = as.numeric(SD14_WaterSampleVol_ml),
+         SD15_SubSampleVol_ml = as.numeric(SD15_SubSampleVol_ml),
+         dens = as.numeric(dens),
+         prop = as.numeric(prop)
+         ) -> extracted_data
+
 ### save data
 ## all data
 write.csv(extracted_data,
